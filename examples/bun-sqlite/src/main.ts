@@ -1,6 +1,4 @@
-import Database from "better-sqlite3";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { Database } from "bun:sqlite";
 
 import {
   createAuthor,
@@ -10,7 +8,7 @@ import {
 } from "./db/query_sql";
 
 async function main() {
-  const ddl = await readFile(join(__dirname, "../../authors/sqlite/schema.sql"), { encoding: 'utf-8' });
+  const ddl = await Bun.file(`${import.meta.dir}/../../authors/sqlite/schema.sql`).text();
   const database = new Database(":memory:");
 
   // Create tables
