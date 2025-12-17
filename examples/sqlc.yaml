@@ -3,7 +3,7 @@ plugins:
 - name: ts
   wasm:
     url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.3.wasm
-    sha256: fc0595e9eb137800bf863de769cd57abd8630ef5ef92f2c9d6faec271ca96d1e
+    sha256: 287df8f6cc06377d67ad5ba02c9e0f00c585509881434d15ea8bd9fc751a9368
 sql:
 - schema: "authors/postgresql/schema.sql"
   queries: "authors/postgresql/query.sql"
@@ -47,6 +47,15 @@ sql:
   codegen:
   - plugin: ts
     out: bun-sql/src/db
+    options:
+      runtime: bun
+      driver: bun-sql
+- schema: "authors/postgresql/schema.sql"
+  queries: "authors/postgresql/query.sql"
+  engine: "postgresql"
+  codegen:
+  - plugin: ts
+    out: bun-sql-docker/src/db
     options:
       runtime: bun
       driver: bun-sql
