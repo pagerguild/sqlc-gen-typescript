@@ -1,6 +1,4 @@
-import Database from "better-sqlite3";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { SQL } from "bun";
 
 import {
   createAuthor,
@@ -10,31 +8,31 @@ import {
 } from "./db/query_sql";
 
 async function main() {
-  const ddl = await readFile(join(__dirname, "../../authors/sqlite/schema.sql"), { encoding: 'utf-8' });
-  const database = new Database(":memory:");
-
-  // Create tables
-  database.exec(ddl);
+  const sql = new SQL(); // You can also specify connection options here
 
   // Create an author
-  await createAuthor(database, {
+  const author = await createAuthor(sql, {
     name: "Seal",
     bio: "Kissed from a rose",
   });
+  if (author === null) {
+    throw new Error("author not created");
+  }
+  console.log(author);
 
   // List the authors
-  const authors = await listAuthors(database);
+  const authors = await listAuthors(sql);
   console.log(authors);
 
   // Get that author
-  const seal = await getAuthor(database, { id: authors[0].id });
+  const seal = await getAuthor(sql, { id: author.id });
   if (seal === null) {
     throw new Error("seal not found");
   }
   console.log(seal);
 
   // Delete the author
-  await deleteAuthor(database, { id: seal.id });
+  await deleteAuthor(sql, { id: seal.id });
 }
 
 (async () => {
