@@ -1,7 +1,120 @@
-# sqlc-gen-typescript
+# sqlc-gen-typescript (PagerGuild Fork)
+
+> [!NOTE]
+> This is PagerGuild's fork of sqlc-gen-typescript with additional features cherry-picked from upstream PRs.
+> 
+> **Upstream Repository:** https://github.com/sqlc-dev/sqlc-gen-typescript
 
 > [!CAUTION]
 > Here be dragons! This plugin is still in early access. Expect breaking changes, missing functionality, and sub-optimal output. Please report all issues and errors. Good luck!
+
+## Fork-Specific Changes
+
+This fork includes the following changes not yet merged upstream:
+
+| PR | Description | Status Upstream |
+|----|-------------|-----------------|
+| [#58](https://github.com/sqlc-dev/sqlc-gen-typescript/pull/58) | Native Bun SQL and SQLite drivers | Open |
+
+## Syncing with Upstream
+
+### Prerequisites
+
+Ensure you have the upstream remote configured:
+
+```bash
+git remote add upstream https://github.com/sqlc-dev/sqlc-gen-typescript.git
+git fetch upstream
+```
+
+### When Upstream Merges Our Applied PRs
+
+When upstream merges a PR that we've already applied (e.g., PR #58), follow these steps to rebase:
+
+1. **Fetch the latest upstream changes:**
+   ```bash
+   git fetch upstream
+   ```
+
+2. **Create a backup branch:**
+   ```bash
+   git checkout main
+   git checkout -b main-backup-$(date +%Y%m%d)
+   ```
+
+3. **Rebase onto upstream, dropping our cherry-picked commits:**
+   ```bash
+   git checkout main
+   git rebase -i upstream/main
+   ```
+   
+   In the interactive rebase, look for commits with messages like:
+   - `Apply upstream PR #58: ...`
+   
+   These can be **dropped** (delete the line or change `pick` to `drop`) since upstream now has the equivalent changes.
+
+4. **Push the rebased main:**
+   ```bash
+   git push origin main --force-with-lease
+   ```
+
+5. **Update the submodule in guilde repo:**
+   ```bash
+   cd /path/to/guilde
+   git submodule update --remote submodules/sqlc-gen-typescript
+   git add submodules/sqlc-gen-typescript
+   git commit -m "Update sqlc-gen-typescript submodule to latest"
+   ```
+
+### Applying New Upstream PRs
+
+To apply a new upstream PR that hasn't been merged:
+
+1. **Create a feature branch:**
+   ```bash
+   git checkout main
+   git checkout -b upstream-pr-XX
+   ```
+
+2. **Fetch and apply the PR:**
+   ```bash
+   gh pr diff XX --repo sqlc-dev/sqlc-gen-typescript > /tmp/prXX.patch
+   git apply /tmp/prXX.patch
+   ```
+
+3. **Commit with upstream reference:**
+   ```bash
+   git add -A
+   git commit -m "Apply upstream PR #XX: <title>
+
+   Upstream PR: https://github.com/sqlc-dev/sqlc-gen-typescript/pull/XX
+   Author: <author>"
+   ```
+
+4. **Create PR and merge:**
+   ```bash
+   git push origin upstream-pr-XX
+   gh pr create --base main --head upstream-pr-XX \
+     --title "Apply upstream PR #XX: <title>" \
+     --body "Upstream PR: https://github.com/sqlc-dev/sqlc-gen-typescript/pull/XX"
+   ```
+
+### Checking Upstream Status
+
+To see what upstream has that we don't:
+
+```bash
+git fetch upstream
+git log main..upstream/main --oneline
+```
+
+To see what we have that upstream doesn't:
+
+```bash
+git log upstream/main..main --oneline
+```
+
+---
 
 ## Usage
 
