@@ -20,7 +20,7 @@ jobs:
       
       - uses: extractions/setup-just@v2
       
-      - uses: baptisteArno/setup-javy@v2
+      - uses: jcbhmr/setup-javy@v1
         with:
           javy-version: '8.0.0'
       
