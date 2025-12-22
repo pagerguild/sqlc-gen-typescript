@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      
+      - uses: extractions/setup-just@v2
+      
+      - uses: baptisteArno/setup-javy@v2
+        with:
+          javy-version: '8.0.0'
+      
+      - name: Install dependencies
+        run: bun install
+      
+      - name: Build WASM plugin
+        run: just plugin-wasm && mv examples/plugin.wasm sqlc-gen-typescript.wasm
+      
+      - name: Calculate SHA256
+        id: sha256
+        run: |
+          SHA256=$(sha256sum sqlc-gen-typescript.wasm | awk '{print $1}')
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "SHA256: $SHA256"
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: sqlc-gen-typescript.wasm
+          body: |
+            ## sqlc-gen-typescript WASM Plugin
+            
+            **SHA256:** `${{ steps.sha256.outputs.sha256 }}`
+            
+            ### Usage
+            
+            Add this to your `sqlc.yaml`:
+            
+            ```yaml
+            plugins:
+              - name: ts
+                wasm:
+                  url: https://github.com/pagerguild/sqlc-gen-typescript/releases/download/${{ github.ref_name }}/sqlc-gen-typescript.wasm
+                  sha256: ${{ steps.sha256.outputs.sha256 }}
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
