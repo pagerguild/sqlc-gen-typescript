@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -13,43 +13,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      
+
       - uses: extractions/setup-just@v2
-      
-      - uses: jcbhmr/setup-javy@v1
-        with:
-          javy-version: '8.0.0'
-      
+
+      - name: Install Javy
+        run: |
+          curl -L https://github.com/bytecodealliance/javy/releases/download/v8.0.0/javy-x86_64-linux-v8.0.0.gz -o javy.gz
+          gunzip javy.gz
+          chmod +x javy
+          sudo mv javy /usr/local/bin/javy
+
       - name: Install dependencies
         run: bun install
-      
+
       - name: Build WASM plugin
         run: just plugin-wasm && mv examples/plugin.wasm sqlc-gen-typescript.wasm
-      
+
       - name: Calculate SHA256
         id: sha256
         run: |
           SHA256=$(sha256sum sqlc-gen-typescript.wasm | awk '{print $1}')
           echo "sha256=$SHA256" >> $GITHUB_OUTPUT
           echo "SHA256: $SHA256"
-      
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: sqlc-gen-typescript.wasm
           body: |
             ## sqlc-gen-typescript WASM Plugin
-            
+
             **SHA256:** `${{ steps.sha256.outputs.sha256 }}`
-            
+
             ### Usage
-            
+
             Add this to your `sqlc.yaml`:
-            
+
             ```yaml
             plugins:
               - name: ts
