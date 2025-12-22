@@ -18,6 +18,12 @@ export interface GetAuthorRow {
     bio: string | null;
 }
 
+export type GetAuthorRowValues = [
+    number,
+    string,
+    string | null
+];
+
 export async function getAuthor(client: Client, args: GetAuthorArgs): Promise<GetAuthorRow | null> {
     const [rows] = await client.query<RowDataPacket[]>({
         sql: getAuthorQuery,
@@ -44,6 +50,12 @@ export interface ListAuthorsRow {
     name: string;
     bio: string | null;
 }
+
+export type ListAuthorsRowValues = [
+    number,
+    string,
+    string | null
+];
 
 export async function listAuthors(client: Client): Promise<ListAuthorsRow[]> {
     const [rows] = await client.query<RowDataPacket[]>({
@@ -157,6 +169,46 @@ export interface TestRow {
     cLongtext: string | null;
     cJson: any | null;
 }
+
+export type TestRowValues = [
+    Buffer | null,
+    number | null,
+    number | null,
+    number | null,
+    number | null,
+    number | null,
+    number | null,
+    number | null,
+    number | null,
+    number,
+    string | null,
+    string | null,
+    string | null,
+    string | null,
+    number | null,
+    number | null,
+    number | null,
+    Date | null,
+    string | null,
+    Date | null,
+    Date | null,
+    number | null,
+    string | null,
+    string | null,
+    string | null,
+    string | null,
+    Buffer | null,
+    Buffer | null,
+    Buffer | null,
+    string | null,
+    Buffer | null,
+    string | null,
+    Buffer | null,
+    string | null,
+    Buffer | null,
+    string | null,
+    any | null
+];
 
 export async function test(client: Client): Promise<TestRow | null> {
     const [rows] = await client.query<RowDataPacket[]>({

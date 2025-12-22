@@ -16,6 +16,12 @@ export interface GetAuthorRow {
     bio: any | null;
 }
 
+export type GetAuthorRowValues = [
+    any,
+    any,
+    any | null
+];
+
 export async function getAuthor(database: Database, args: GetAuthorArgs): Promise<GetAuthorRow | null> {
     const stmt = database.prepare(getAuthorQuery);
     const result = await stmt.get(args.id);
@@ -34,6 +40,12 @@ export interface ListAuthorsRow {
     name: any;
     bio: any | null;
 }
+
+export type ListAuthorsRowValues = [
+    any,
+    any,
+    any | null
+];
 
 export async function listAuthors(database: Database): Promise<ListAuthorsRow[]> {
     const stmt = database.prepare(listAuthorsQuery);

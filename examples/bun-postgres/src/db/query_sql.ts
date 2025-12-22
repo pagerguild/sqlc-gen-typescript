@@ -16,6 +16,12 @@ export interface GetAuthorRow {
     bio: string | null;
 }
 
+export type GetAuthorRowValues = [
+    string,
+    string,
+    string | null
+];
+
 export async function getAuthor(sql: Sql, args: GetAuthorArgs): Promise<GetAuthorRow | null> {
     const rows = await sql.unsafe(getAuthorQuery, [args.id]).values();
     if (rows.length !== 1) {
@@ -42,8 +48,14 @@ export interface ListAuthorsRow {
     bio: string | null;
 }
 
+export type ListAuthorsRowValues = [
+    string,
+    string,
+    string | null
+];
+
 export async function listAuthors(sql: Sql): Promise<ListAuthorsRow[]> {
-    return (await sql.unsafe(listAuthorsQuery, []).values()).map(row => ({
+    return (await sql.unsafe(listAuthorsQuery, []).values()).map((row: any[]) => ({
         id: row[0],
         name: row[1],
         bio: row[2]
@@ -68,6 +80,12 @@ export interface CreateAuthorRow {
     name: string;
     bio: string | null;
 }
+
+export type CreateAuthorRowValues = [
+    string,
+    string,
+    string | null
+];
 
 export async function createAuthor(sql: Sql, args: CreateAuthorArgs): Promise<CreateAuthorRow | null> {
     const rows = await sql.unsafe(createAuthorQuery, [args.name, args.bio]).values();
