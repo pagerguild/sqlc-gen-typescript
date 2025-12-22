@@ -20,5 +20,17 @@ codegen-proto:
 clean:
     rm -f out.js examples/plugin.wasm
 
+# Format TypeScript
+fmt:
+    bunx oxfmt
+
+# Lint TypeScript
+lint:
+    bunx oxlint --deny-warnings
+
+# Run unit tests
+test:
+    bun test
+
 # Build everything from scratch
 build: clean generate

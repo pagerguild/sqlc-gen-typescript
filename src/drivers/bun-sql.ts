@@ -402,34 +402,42 @@ export class Driver {
           factory.createReturnStatement(
             factory.createCallExpression(
               factory.createPropertyAccessExpression(
-                factory.createAwaitExpression(
-                  factory.createCallExpression(
-                    factory.createPropertyAccessExpression(
-                      factory.createCallExpression(
-                        factory.createPropertyAccessExpression(
-                          factory.createIdentifier("sql"),
-                          factory.createIdentifier("unsafe")
-                        ),
-                        undefined,
-                        [
-                          factory.createIdentifier(queryName),
-                          factory.createArrayLiteralExpression(
-                            params.map((param, i) =>
-                              factory.createPropertyAccessExpression(
-                                factory.createIdentifier("args"),
-                                factory.createIdentifier(
-                                  argName(i, param.column)
-                                )
-                              )
-                            ),
-                            false
+                factory.createAsExpression(
+                  factory.createAwaitExpression(
+                    factory.createCallExpression(
+                      factory.createPropertyAccessExpression(
+                        factory.createCallExpression(
+                          factory.createPropertyAccessExpression(
+                            factory.createIdentifier("sql"),
+                            factory.createIdentifier("unsafe")
                           ),
-                        ]
+                          undefined,
+                          [
+                            factory.createIdentifier(queryName),
+                            factory.createArrayLiteralExpression(
+                              params.map((param, i) =>
+                                factory.createPropertyAccessExpression(
+                                  factory.createIdentifier("args"),
+                                  factory.createIdentifier(
+                                    argName(i, param.column)
+                                  )
+                                )
+                              ),
+                              false
+                            ),
+                          ]
+                        ),
+                        factory.createIdentifier("values")
                       ),
-                      factory.createIdentifier("values")
-                    ),
-                    undefined,
-                    undefined
+                      undefined,
+                      undefined
+                    )
+                  ),
+                  factory.createArrayTypeNode(
+                    factory.createTypeReferenceNode(
+                      factory.createIdentifier(`${returnIface}Values`),
+                      undefined
+                    )
                   )
                 ),
                 factory.createIdentifier("map")
@@ -508,34 +516,42 @@ export class Driver {
                   factory.createIdentifier("rows"),
                   undefined,
                   undefined,
-                  factory.createAwaitExpression(
-                    factory.createCallExpression(
-                      factory.createPropertyAccessExpression(
-                        factory.createCallExpression(
-                          factory.createPropertyAccessExpression(
-                            factory.createIdentifier("sql"),
-                            factory.createIdentifier("unsafe")
-                          ),
-                          undefined,
-                          [
-                            factory.createIdentifier(queryName),
-                            factory.createArrayLiteralExpression(
-                              params.map((param, i) =>
-                                factory.createPropertyAccessExpression(
-                                  factory.createIdentifier("args"),
-                                  factory.createIdentifier(
-                                    argName(i, param.column)
-                                  )
-                                )
-                              ),
-                              false
+                  factory.createAsExpression(
+                    factory.createAwaitExpression(
+                      factory.createCallExpression(
+                        factory.createPropertyAccessExpression(
+                          factory.createCallExpression(
+                            factory.createPropertyAccessExpression(
+                              factory.createIdentifier("sql"),
+                              factory.createIdentifier("unsafe")
                             ),
-                          ]
+                            undefined,
+                            [
+                              factory.createIdentifier(queryName),
+                              factory.createArrayLiteralExpression(
+                                params.map((param, i) =>
+                                  factory.createPropertyAccessExpression(
+                                    factory.createIdentifier("args"),
+                                    factory.createIdentifier(
+                                      argName(i, param.column)
+                                    )
+                                  )
+                                ),
+                                false
+                              ),
+                            ]
+                          ),
+                          factory.createIdentifier("values")
                         ),
-                        factory.createIdentifier("values")
-                      ),
-                      undefined,
-                      undefined
+                        undefined,
+                        undefined
+                      )
+                    ),
+                    factory.createArrayTypeNode(
+                      factory.createTypeReferenceNode(
+                        factory.createIdentifier(`${returnIface}Values`),
+                        undefined
+                      )
                     )
                   )
                 ),

@@ -443,7 +443,12 @@ export class Driver {
                     factory.createParameterDeclaration(
                       undefined,
                       undefined,
-                      "row"
+                      "row",
+                      undefined,
+                      factory.createArrayTypeNode(
+                        factory.createKeywordTypeNode(SyntaxKind.AnyKeyword)
+                      ),
+                      undefined
                     ),
                   ],
                   undefined,

@@ -27,6 +27,8 @@ import {
 } from "./gen/plugin/codegen_pb";
 
 import { argName, colName } from "./drivers/utlis";
+import { rowValuesDecl } from "./decls";
+import { assertUniqueNames } from "./validate";
 import { Driver as Sqlite3Driver } from "./drivers/better-sqlite3";
 import { Driver as PgDriver } from "./drivers/pg";
 import { Driver as PostgresDriver } from "./drivers/postgres";
@@ -127,23 +129,11 @@ function codegen(input: GenerateRequest): GenerateResponse {
     qs?.push(query);
   }
 
-  for (const [filename, queries] of querymap.entries()) {
-    const nodes = driver.preamble(queries);
+    for (const [filename, queries] of querymap.entries()) {
+      const nodes = driver.preamble(queries);
 
-    for (const query of queries) {
-      const colmap = new Map<string, number>();
-      for (let column of query.columns) {
-        if (!column.name) {
-          continue;
-        }
-        const count = colmap.get(column.name) || 0;
-        if (count > 0) {
-          column.name = `${column.name}_${count + 1}`;
-        }
-        colmap.set(column.name, count + 1);
-      }
-
-      const lowerName = query.name[0].toLowerCase() + query.name.slice(1);
+      for (const query of queries) {
+        const lowerName = query.name[0].toLowerCase() + query.name.slice(1);
       const textName = `${lowerName}Query`;
 
       nodes.push(
@@ -158,11 +148,28 @@ ${query.text}`
       let returnIface = undefined;
       if (query.params.length > 0) {
         argIface = `${query.name}Args`;
-        nodes.push(argsDecl(argIface, driver, query.params));
+        nodes.push(
+          argsDecl({
+            name: argIface,
+            driver,
+            params: query.params,
+            queryName: query.name,
+            fileName: filename,
+          })
+        );
       }
       if (query.columns.length > 0) {
         returnIface = `${query.name}Row`;
-        nodes.push(rowDecl(returnIface, driver, query.columns));
+        nodes.push(
+          rowDecl({
+            name: returnIface,
+            driver,
+            columns: query.columns,
+            queryName: query.name,
+            fileName: filename,
+          })
+        );
+        nodes.push(rowValuesDecl(`${returnIface}Values`, driver, query.columns));
       }
 
       switch (query.cmd) {
@@ -244,43 +251,63 @@ function queryDecl(name: string, sql: string) {
   );
 }
 
-function argsDecl(
-  name: string,
-  driver: Driver,
-  params: Parameter[]
-) {
+function argsDecl(options: {
+  name: string;
+  driver: Driver;
+  params: Parameter[];
+  queryName: string;
+  fileName: string;
+}) {
+  const names = options.params.map((param, i) => argName(i, param.column));
+  assertUniqueNames({
+    kind: "argument",
+    queryName: options.queryName,
+    fileName: options.fileName,
+    names,
+  });
+
   return factory.createInterfaceDeclaration(
     [factory.createToken(SyntaxKind.ExportKeyword)],
-    factory.createIdentifier(name),
+    factory.createIdentifier(options.name),
     undefined,
     undefined,
-    params.map((param, i) =>
+    options.params.map((param, i) =>
       factory.createPropertySignature(
         undefined,
         factory.createIdentifier(argName(i, param.column)),
         undefined,
-        driver.columnType(param.column)
+        options.driver.columnType(param.column)
       )
     )
   );
 }
 
-function rowDecl(
-  name: string,
-  driver: Driver,
-  columns: Column[]
-) {
+function rowDecl(options: {
+  name: string;
+  driver: Driver;
+  columns: Column[];
+  queryName: string;
+  fileName: string;
+}) {
+  const names = options.columns.map((column, i) => colName(i, column));
+  assertUniqueNames({
+    kind: "column",
+    queryName: options.queryName,
+    fileName: options.fileName,
+    names,
+  });
+
   return factory.createInterfaceDeclaration(
     [factory.createToken(SyntaxKind.ExportKeyword)],
-    factory.createIdentifier(name),
+    factory.createIdentifier(options.name),
     undefined,
     undefined,
-    columns.map((column, i) =>
+    options.columns.map((column, i) =>
       factory.createPropertySignature(
         undefined,
         factory.createIdentifier(colName(i, column)),
         undefined,
-        driver.columnType(column)
+        options.driver.columnType(column)
       )
     )
   );
