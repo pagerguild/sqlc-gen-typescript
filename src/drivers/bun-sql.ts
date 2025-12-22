@@ -8,7 +8,6 @@ import {
 
 import { Parameter, Column } from "../gen/plugin/codegen_pb";
 import { argName, colName } from "./utlis";
-import { log } from "../logger";
 
 function funcParamsDecl(iface: string | undefined, params: Parameter[]) {
   let funcParams = [
@@ -116,6 +115,10 @@ export class Driver {
         typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
         break;
       }
+      case "double precision": {
+        typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
+        break;
+      }
       case "inet": {
         // string
         break;
@@ -128,7 +131,19 @@ export class Driver {
         typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
         break;
       }
+      case "int": {
+        typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
+        break;
+      }
+      case "integer": {
+        typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
+        break;
+      }
       case "int8": {
+        // string
+        break;
+      }
+      case "bigint": {
         // string
         break;
       }
@@ -279,7 +294,7 @@ export class Driver {
         break;
       }
       default: {
-        log(`unknown type ${column.type?.name}`);
+        typ = factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
         break;
       }
     }
