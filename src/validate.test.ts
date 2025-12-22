@@ -24,4 +24,15 @@ describe("assertUniqueNames", () => {
       })
     ).not.toThrow();
   });
+
+  it("throws with helpful message on duplicate column names", () => {
+    expect(() =>
+      assertUniqueNames({
+        kind: "column",
+        queryName: "ListJobRuns",
+        fileName: "job_runs.sql",
+        names: ["startedAt", "startedAt"],
+      })
+    ).toThrow(/sqlc\.arg|sqlc\.narg|column aliases|named parameters/i);
+  });
 });

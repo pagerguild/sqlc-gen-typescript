@@ -48,12 +48,15 @@ export class Driver {
     if (column === undefined || column.type === undefined) {
       return factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
     }
-    // Some of the type names have the `pgcatalog.` prefix. Remove this.
+    // Some of the type names have the `pg_catalog.` prefix. Remove this.
     let typeName = column.type.name;
     const pgCatalog = "pg_catalog.";
     if (typeName.startsWith(pgCatalog)) {
       typeName = typeName.slice(pgCatalog.length);
     }
+
+    typeName = typeName.toLowerCase();
+
     let typ: TypeNode = factory.createKeywordTypeNode(SyntaxKind.StringKeyword);
     switch (typeName) {
       case "aclitem": {
@@ -69,6 +72,10 @@ export class Driver {
         break;
       }
       case "bool": {
+        typ = factory.createKeywordTypeNode(SyntaxKind.BooleanKeyword);
+        break;
+      }
+      case "boolean": {
         typ = factory.createKeywordTypeNode(SyntaxKind.BooleanKeyword);
         break;
       }
@@ -111,7 +118,15 @@ export class Driver {
         typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
         break;
       }
+      case "real": {
+        typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
+        break;
+      }
       case "float8": {
+        typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
+        break;
+      }
+      case "float": {
         typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
         break;
       }
@@ -124,6 +139,10 @@ export class Driver {
         break;
       }
       case "int2": {
+        typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
+        break;
+      }
+      case "smallint": {
         typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
         break;
       }
@@ -157,6 +176,14 @@ export class Driver {
       }
       case "jsonb": {
         typ = factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
+        break;
+      }
+      case "numeric": {
+        // string
+        break;
+      }
+      case "decimal": {
+        // string
         break;
       }
       case "line": {
@@ -239,6 +266,14 @@ export class Driver {
         // string
         break;
       }
+      case "character varying": {
+        // string
+        break;
+      }
+      case "character": {
+        // string
+        break;
+      }
       case "time": {
         // string
         break;
@@ -254,7 +289,21 @@ export class Driver {
         );
         break;
       }
+      case "timestamp without time zone": {
+        typ = factory.createTypeReferenceNode(
+          factory.createIdentifier("Date"),
+          undefined
+        );
+        break;
+      }
       case "timestamptz": {
+        typ = factory.createTypeReferenceNode(
+          factory.createIdentifier("Date"),
+          undefined
+        );
+        break;
+      }
+      case "timestamp with time zone": {
         typ = factory.createTypeReferenceNode(
           factory.createIdentifier("Date"),
           undefined
@@ -417,41 +466,43 @@ export class Driver {
           factory.createReturnStatement(
             factory.createCallExpression(
               factory.createPropertyAccessExpression(
-                factory.createAsExpression(
-                  factory.createAwaitExpression(
-                    factory.createCallExpression(
-                      factory.createPropertyAccessExpression(
-                        factory.createCallExpression(
-                          factory.createPropertyAccessExpression(
-                            factory.createIdentifier("sql"),
-                            factory.createIdentifier("unsafe")
-                          ),
-                          undefined,
-                          [
-                            factory.createIdentifier(queryName),
-                            factory.createArrayLiteralExpression(
-                              params.map((param, i) =>
-                                factory.createPropertyAccessExpression(
-                                  factory.createIdentifier("args"),
-                                  factory.createIdentifier(
-                                    argName(i, param.column)
-                                  )
-                                )
-                              ),
-                              false
+                factory.createParenthesizedExpression(
+                  factory.createAsExpression(
+                    factory.createAwaitExpression(
+                      factory.createCallExpression(
+                        factory.createPropertyAccessExpression(
+                          factory.createCallExpression(
+                            factory.createPropertyAccessExpression(
+                              factory.createIdentifier("sql"),
+                              factory.createIdentifier("unsafe")
                             ),
-                          ]
+                            undefined,
+                            [
+                              factory.createIdentifier(queryName),
+                              factory.createArrayLiteralExpression(
+                                params.map((param, i) =>
+                                  factory.createPropertyAccessExpression(
+                                    factory.createIdentifier("args"),
+                                    factory.createIdentifier(
+                                      argName(i, param.column)
+                                    )
+                                  )
+                                ),
+                                false
+                              ),
+                            ]
+                          ),
+                          factory.createIdentifier("values")
                         ),
-                        factory.createIdentifier("values")
-                      ),
-                      undefined,
-                      undefined
-                    )
-                  ),
-                  factory.createArrayTypeNode(
-                    factory.createTypeReferenceNode(
-                      factory.createIdentifier(`${returnIface}Values`),
-                      undefined
+                        undefined,
+                        undefined
+                      )
+                    ),
+                    factory.createArrayTypeNode(
+                      factory.createTypeReferenceNode(
+                        factory.createIdentifier(`${returnIface}Values`),
+                        undefined
+                      )
                     )
                   )
                 ),

@@ -9,6 +9,7 @@ import {
 } from "typescript";
 
 import { Driver as BunSqlDriver } from "./bun-sql";
+import { rowValuesDecl } from "../decls";
 import type { Column, Parameter } from "../gen/plugin/codegen_pb";
 
 function print(node: unknown): string {
@@ -79,5 +80,37 @@ describe("bun-sql driver codegen", () => {
 
     const output = print(node);
     expect(output).toContain("as GetThingRowValues[]");
+  });
+
+  it("maps common Postgres alias types", () => {
+    const driver = new BunSqlDriver();
+    const columns: Column[] = [
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      ({ name: "a", type: { name: "int" }, notNull: true } as unknown as Column),
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      ({ name: "b", type: { name: "integer" }, notNull: true } as unknown as Column),
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      ({ name: "c", type: { name: "bigint" }, notNull: true } as unknown as Column),
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      ({ name: "d", type: { name: "double precision" }, notNull: true } as unknown as Column),
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      ({ name: "e", type: { name: "smallint" }, notNull: true } as unknown as Column),
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      ({ name: "f", type: { name: "real" }, notNull: true } as unknown as Column),
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      ({ name: "g", type: { name: "timestamp with time zone" }, notNull: true } as unknown as Column),
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      ({ name: "h", type: { name: "timestamp without time zone" }, notNull: true } as unknown as Column),
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      ({ name: "i", type: { name: "character varying" }, notNull: true } as unknown as Column),
+    ];
+
+    const node = rowValuesDecl("AliasRowValues", driver, columns);
+    const output = print(node);
+
+    expect(output).toContain("export type AliasRowValues");
+    expect(output).toMatch(
+      /\[\s*number,\s*number,\s*string,\s*number,\s*number,\s*number,\s*Date,\s*Date,\s*string\s*\]/
+    );
   });
 });
