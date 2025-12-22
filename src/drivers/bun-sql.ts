@@ -9,6 +9,59 @@ import {
 import { Parameter, Column } from "../gen/plugin/codegen_pb";
 import { argName, colName } from "./utlis";
 
+// PostgreSQL types that Bun SQL returns as strings but we want as numbers.
+// These are 64-bit integers which Bun returns as strings to avoid precision loss,
+// but for typical use cases (auto-incrementing IDs), converting to JS number is safe.
+const BIGINT_TYPES = new Set(["int8", "bigint", "bigserial", "serial8"]);
+
+function isBigIntType(column?: Column): boolean {
+  if (!column?.type?.name) return false;
+  let typeName = column.type.name;
+  const pgCatalog = "pg_catalog.";
+  if (typeName.startsWith(pgCatalog)) {
+    typeName = typeName.slice(pgCatalog.length);
+  }
+  return BIGINT_TYPES.has(typeName.toLowerCase());
+}
+
+// Creates an expression to access row[i], with Number() conversion for bigint types.
+// For nullable bigint columns: row[i] === null ? null : Number(row[i])
+// For non-nullable bigint columns: Number(row[i])
+// For other columns: row[i]
+function createRowAccessExpression(col: Column, index: number) {
+  const rowAccess = factory.createElementAccessExpression(
+    factory.createIdentifier("row"),
+    factory.createNumericLiteral(`${index}`)
+  );
+
+  if (!isBigIntType(col)) {
+    return rowAccess;
+  }
+
+  const numberCall = factory.createCallExpression(
+    factory.createIdentifier("Number"),
+    undefined,
+    [rowAccess]
+  );
+
+  if (col.notNull) {
+    return numberCall;
+  }
+
+  // row[i] === null ? null : Number(row[i])
+  return factory.createConditionalExpression(
+    factory.createBinaryExpression(
+      rowAccess,
+      factory.createToken(SyntaxKind.EqualsEqualsEqualsToken),
+      factory.createNull()
+    ),
+    factory.createToken(SyntaxKind.QuestionToken),
+    factory.createNull(),
+    factory.createToken(SyntaxKind.ColonToken),
+    numberCall
+  );
+}
+
 function funcParamsDecl(iface: string | undefined, params: Parameter[]) {
   let funcParams = [
     factory.createParameterDeclaration(
@@ -64,7 +117,7 @@ export class Driver {
         break;
       }
       case "bigserial": {
-        // string
+        typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
         break;
       }
       case "bit": {
@@ -159,11 +212,11 @@ export class Driver {
         break;
       }
       case "int8": {
-        // string
+        typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
         break;
       }
       case "bigint": {
-        // string
+        typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
         break;
       }
       case "interval": {
@@ -251,7 +304,7 @@ export class Driver {
         break;
       }
       case "serial8": {
-        // string
+        typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
         break;
       }
       case "smallserial": {
@@ -526,10 +579,7 @@ export class Driver {
                     columns.map((col, i) =>
                       factory.createPropertyAssignment(
                         factory.createIdentifier(colName(i, col)),
-                        factory.createElementAccessExpression(
-                          factory.createIdentifier("row"),
-                          factory.createNumericLiteral(`${i}`)
-                        )
+                        createRowAccessExpression(col, i)
                       )
                     ),
                     true
@@ -678,10 +728,7 @@ export class Driver {
               columns.map((col, i) =>
                 factory.createPropertyAssignment(
                   factory.createIdentifier(colName(i, col)),
-                  factory.createElementAccessExpression(
-                    factory.createIdentifier("row"),
-                    factory.createNumericLiteral(`${i}`)
-                  )
+                  createRowAccessExpression(col, i)
                 )
               ),
               true
