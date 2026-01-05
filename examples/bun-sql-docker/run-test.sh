@@ -5,7 +5,7 @@ CONTAINER_NAME="sqlc-bun-test-db"
 DB_USER="testuser"
 DB_PASS="testpass"
 DB_NAME="testdb"
-DB_PORT="5433"
+DB_PORT="5432"
 
 # Colors for output
 RED='\033[0;31m'
