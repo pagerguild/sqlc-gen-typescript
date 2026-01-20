@@ -3,17 +3,17 @@ generate: plugin-wasm
     cd examples && sqlc-dev -f sqlc.dev.yaml generate
 
 # Compile JavaScript to WASM using javy
+
 # https://github.com/bytecodealliance/javy
 plugin-wasm: out-js
     javy build out.js -o examples/plugin.wasm
 
-# Bundle TypeScript to JavaScript using esbuild
+# Bundle TypeScript to JavaScript using rolldown
 out-js: codegen-proto
-    bunx tsc --noEmit
-    bunx esbuild --bundle src/app.ts --tree-shaking=true --format=esm --target=es2020 --outfile=out.js
+    bun run rolldown -c rolldown.config.js
 
 # Generate protobuf code using buf
-codegen-proto:
+codegen-proto: lint
     buf generate --template buf.gen.yaml buf.build/sqlc/sqlc --path plugin/
 
 # Clean build artifacts
@@ -22,11 +22,11 @@ clean:
 
 # Format TypeScript
 fmt:
-    bunx oxfmt
+    bun run oxfmt
 
 # Lint TypeScript
 lint:
-    bunx oxlint --deny-warnings
+    bun run oxlint --type-aware --type-check
 
 # Run unit tests
 test:
