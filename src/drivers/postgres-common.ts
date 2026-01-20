@@ -424,7 +424,11 @@ export class PostgresCommonDriver {
     return [
       factory.createImportDeclaration(
         undefined,
-        factory.createImportClause(useTypeImport, undefined, factory.createNamedImports([importSpecifier])),
+        factory.createImportClause(
+          useTypeImport,
+          undefined,
+          factory.createNamedImports([importSpecifier]),
+        ),
         factory.createStringLiteral(importModule),
         undefined,
       ),

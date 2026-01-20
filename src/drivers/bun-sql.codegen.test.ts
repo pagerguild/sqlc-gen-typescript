@@ -196,8 +196,7 @@ describe("postgres driver codegen", () => {
     expect(output).toContain('import type { Sql as SQL } from "postgres"');
   });
 
-  it("produces same function signatures as bun-sql driver", () => {
-    const bunDriver = new BunSqlDriver();
+  it("generates simpler code that casts directly to Row type", () => {
     const postgresDriver = new PostgresDriver();
 
     const params: Parameter[] = [
@@ -209,10 +208,7 @@ describe("postgres driver codegen", () => {
       { name: "name", type: { name: "text" }, notNull: true } as unknown as Column,
     ];
 
-    const bunOutput = print(
-      bunDriver.oneDecl("getThing", "getThingQuery", "GetThingArgs", "GetThingRow", params, columns),
-    );
-    const postgresOutput = print(
+    const output = print(
       postgresDriver.oneDecl(
         "getThing",
         "getThingQuery",
@@ -223,7 +219,9 @@ describe("postgres driver codegen", () => {
       ),
     );
 
-    // The function bodies should be identical (both use SQL as the type name)
-    expect(bunOutput).toBe(postgresOutput);
+    // postgres.js driver casts directly to Row[] without .values()
+    expect(output).toContain("as GetThingRow[]");
+    expect(output).not.toContain(".values()");
+    expect(output).toContain("rows[0] ?? null");
   });
 });
