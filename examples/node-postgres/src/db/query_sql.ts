@@ -23,19 +23,11 @@ export type GetAuthorRowValues = [
 ];
 
 export async function getAuthor(sql: SQL, args: GetAuthorArgs): Promise<GetAuthorRow | null> {
-    const rows = await sql.unsafe(getAuthorQuery, [args.id]).values() as GetAuthorRowValues[];
+    const rows = await sql.unsafe(getAuthorQuery, [args.id]) as GetAuthorRow[];
     if (rows.length !== 1) {
         return null;
     }
-    const row = rows[0];
-    if (!row) {
-        return null;
-    }
-    return {
-        id: Number(row[0]),
-        name: row[1],
-        bio: row[2]
-    };
+    return rows[0] ?? null;
 }
 
 export const listAuthorsQuery = `-- name: ListAuthors :many
@@ -55,11 +47,7 @@ export type ListAuthorsRowValues = [
 ];
 
 export async function listAuthors(sql: SQL): Promise<ListAuthorsRow[]> {
-    return (await sql.unsafe(listAuthorsQuery, []).values() as ListAuthorsRowValues[]).map(row => ({
-        id: Number(row[0]),
-        name: row[1],
-        bio: row[2]
-    }));
+    return await sql.unsafe(listAuthorsQuery, []) as ListAuthorsRow[];
 }
 
 export const createAuthorQuery = `-- name: CreateAuthor :one
@@ -88,19 +76,11 @@ export type CreateAuthorRowValues = [
 ];
 
 export async function createAuthor(sql: SQL, args: CreateAuthorArgs): Promise<CreateAuthorRow | null> {
-    const rows = await sql.unsafe(createAuthorQuery, [args.name, args.bio]).values() as CreateAuthorRowValues[];
+    const rows = await sql.unsafe(createAuthorQuery, [args.name, args.bio]) as CreateAuthorRow[];
     if (rows.length !== 1) {
         return null;
     }
-    const row = rows[0];
-    if (!row) {
-        return null;
-    }
-    return {
-        id: Number(row[0]),
-        name: row[1],
-        bio: row[2]
-    };
+    return rows[0] ?? null;
 }
 
 export const deleteAuthorQuery = `-- name: DeleteAuthor :exec
