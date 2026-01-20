@@ -2,10 +2,6 @@
 
 import type { Sql } from "postgres";
 
-export const getAuthorQuery = `-- name: GetAuthor :one
-SELECT id, name, bio FROM authors
-WHERE id = $1 LIMIT 1`;
-
 export interface GetAuthorArgs {
     id: number;
 }
@@ -17,16 +13,10 @@ export interface GetAuthorRow {
 }
 
 export async function getAuthor(sql: Sql, args: GetAuthorArgs): Promise<GetAuthorRow | null> {
-    const rows = await sql.unsafe(getAuthorQuery, [args.id]) as GetAuthorRow[];
-    if (rows.length !== 1) {
-        return null;
-    }
+    const rows = await sql<GetAuthorRow[]> `SELECT id, name, bio FROM authors
+WHERE id = ${args.id} LIMIT 1`;
     return rows[0] ?? null;
 }
-
-export const listAuthorsQuery = `-- name: ListAuthors :many
-SELECT id, name, bio FROM authors
-ORDER BY name`;
 
 export interface ListAuthorsRow {
     id: number;
@@ -35,16 +25,9 @@ export interface ListAuthorsRow {
 }
 
 export async function listAuthors(sql: Sql): Promise<ListAuthorsRow[]> {
-    return await sql.unsafe(listAuthorsQuery, []) as ListAuthorsRow[];
+    return await sql<ListAuthorsRow[]> `SELECT id, name, bio FROM authors
+ORDER BY name`;
 }
-
-export const createAuthorQuery = `-- name: CreateAuthor :one
-INSERT INTO authors (
-  name, bio
-) VALUES (
-  $1, $2
-)
-RETURNING id, name, bio`;
 
 export interface CreateAuthorArgs {
     name: string;
@@ -58,22 +41,21 @@ export interface CreateAuthorRow {
 }
 
 export async function createAuthor(sql: Sql, args: CreateAuthorArgs): Promise<CreateAuthorRow | null> {
-    const rows = await sql.unsafe(createAuthorQuery, [args.name, args.bio]) as CreateAuthorRow[];
-    if (rows.length !== 1) {
-        return null;
-    }
+    const rows = await sql<CreateAuthorRow[]> `INSERT INTO authors (
+  name, bio
+) VALUES (
+  ${args.name}, ${args.bio}
+)
+RETURNING id, name, bio`;
     return rows[0] ?? null;
 }
-
-export const deleteAuthorQuery = `-- name: DeleteAuthor :exec
-DELETE FROM authors
-WHERE id = $1`;
 
 export interface DeleteAuthorArgs {
     id: number;
 }
 
 export async function deleteAuthor(sql: Sql, args: DeleteAuthorArgs): Promise<void> {
-    await sql.unsafe(deleteAuthorQuery, [args.id]);
+    await sql `DELETE FROM authors
+WHERE id = ${args.id}`;
 }
 

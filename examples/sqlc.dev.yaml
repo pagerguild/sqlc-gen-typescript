@@ -9,43 +9,10 @@ sql:
   engine: "postgresql"
   codegen:
   - plugin: ts
-    out: node-pg/src/db
-    options:
-      runtime: node
-      driver: pg
-- schema: "authors/postgresql/schema.sql"
-  queries: "authors/postgresql/query.sql"
-  engine: "postgresql"
-  codegen:
-  - plugin: ts
-    out: bun-pg/src/db
-    options:
-      runtime: bun
-      driver: pg
-- schema: "authors/postgresql/schema.sql"
-  queries: "authors/postgresql/query.sql"
-  engine: "postgresql"
-  codegen:
-  - plugin: ts
     out: node-postgres/src/db
-    options:
-      runtime: node
-      driver: postgres
 - schema: "authors/postgresql/schema.sql"
   queries: "authors/postgresql/query.sql"
   engine: "postgresql"
   codegen:
   - plugin: ts
     out: bun-postgres/src/db
-    options:
-      runtime: bun
-      driver: postgres
-- schema: "authors/postgresql/schema.sql"
-  queries: "authors/postgresql/query.sql"
-  engine: "postgresql"
-  codegen:
-  - plugin: ts
-    out: bun-sql/src/db
-    options:
-      runtime: bun
-      driver: bun-sql

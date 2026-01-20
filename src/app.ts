@@ -2,32 +2,20 @@ import { readFileSync, writeFileSync, STDIO } from "javy/fs";
 import {
   EmitHint,
   NewLineKind,
-  TypeNode,
   ScriptKind,
   ScriptTarget,
   SyntaxKind,
   Node,
-  NodeFlags,
   createPrinter,
   createSourceFile,
   factory,
 } from "typescript";
 
-import {
-  GenerateRequest,
-  GenerateResponse,
-  Parameter,
-  Column,
-  File,
-  Query,
-} from "./gen/plugin/codegen_pb";
+import { GenerateRequest, GenerateResponse, File } from "./gen/plugin/codegen_pb";
 
-import { argName, colName } from "./drivers/utlis";
-
+import { argName, colName } from "./drivers/utils";
 import { assertUniqueNames } from "./validate";
-import { Driver as PgDriver } from "./drivers/pg";
-import { Driver as PostgresDriver } from "./drivers/postgres";
-import { Driver as BunSqlDriver } from "./drivers/bun-sql";
+import * as postgres from "./drivers/postgres";
 
 // Read input from stdin
 const input = readInput();
@@ -36,68 +24,10 @@ const result = codegen(input);
 // Write the result to stdout
 writeOutput(result);
 
-interface Options {
-  runtime?: string;
-  driver?: string;
-}
-
-interface Driver {
-  preamble: (queries: Query[]) => Node[];
-  columnType: (c?: Column) => TypeNode;
-  execDecl: (name: string, text: string, iface: string | undefined, params: Parameter[]) => Node;
-  execlastidDecl: (
-    name: string,
-    text: string,
-    iface: string | undefined,
-    params: Parameter[],
-  ) => Node;
-  manyDecl: (
-    name: string,
-    text: string,
-    argIface: string | undefined,
-    returnIface: string,
-    params: Parameter[],
-    columns: Column[],
-  ) => Node;
-  oneDecl: (
-    name: string,
-    text: string,
-    argIface: string | undefined,
-    returnIface: string,
-    params: Parameter[],
-    columns: Column[],
-  ) => Node;
-}
-
-function createNodeGenerator(options: Options): Driver {
-  switch (options.driver) {
-    case "pg": {
-      return new PgDriver();
-    }
-    case "postgres": {
-      return new PostgresDriver();
-    }
-    case "bun-sql": {
-      return new BunSqlDriver();
-    }
-  }
-  throw new Error(`unknown driver: ${options.driver}`);
-}
-
 function codegen(input: GenerateRequest): GenerateResponse {
   let files = [];
-  let options: Options = {};
 
-  if (input.pluginOptions.length > 0) {
-    const text = new TextDecoder().decode(input.pluginOptions);
-    options = JSON.parse(text) as Options;
-  }
-
-  const driver = createNodeGenerator(options);
-
-  // TODO: Verify options, parse them from protobuf honestly
-
-  const querymap = new Map<string, Query[]>();
+  const querymap = new Map<string, typeof input.queries>();
 
   for (const query of input.queries) {
     if (!querymap.has(query.filename)) {
@@ -108,61 +38,84 @@ function codegen(input: GenerateRequest): GenerateResponse {
   }
 
   for (const [filename, queries] of querymap.entries()) {
-    const nodes = driver.preamble(queries);
+    const nodes: Node[] = [...postgres.preamble()];
 
     for (const query of queries) {
       const lowerName = query.name[0].toLowerCase() + query.name.slice(1);
-      const textName = `${lowerName}Query`;
-
-      nodes.push(
-        queryDecl(
-          textName,
-          `-- name: ${query.name} ${query.cmd}
-${query.text}`,
-        ),
-      );
 
       let argIface = undefined;
       let returnIface = undefined;
+
       if (query.params.length > 0) {
         argIface = `${query.name}Args`;
+        const names = query.params.map((param, i) => argName(i, param.column));
+        assertUniqueNames({
+          kind: "argument",
+          queryName: query.name,
+          fileName: filename,
+          names,
+        });
+
         nodes.push(
-          argsDecl({
-            name: argIface,
-            driver,
-            params: query.params,
-            queryName: query.name,
-            fileName: filename,
-          }),
+          factory.createInterfaceDeclaration(
+            [factory.createToken(SyntaxKind.ExportKeyword)],
+            factory.createIdentifier(argIface),
+            undefined,
+            undefined,
+            query.params.map((param, i) =>
+              factory.createPropertySignature(
+                undefined,
+                factory.createIdentifier(argName(i, param.column)),
+                undefined,
+                postgres.columnType(param.column),
+              ),
+            ),
+          ),
         );
       }
+
       if (query.columns.length > 0) {
         returnIface = `${query.name}Row`;
+        const names = query.columns.map((column, i) => colName(i, column));
+        assertUniqueNames({
+          kind: "column",
+          queryName: query.name,
+          fileName: filename,
+          names,
+        });
+
         nodes.push(
-          rowDecl({
-            name: returnIface,
-            driver,
-            columns: query.columns,
-            queryName: query.name,
-            fileName: filename,
-          }),
+          factory.createInterfaceDeclaration(
+            [factory.createToken(SyntaxKind.ExportKeyword)],
+            factory.createIdentifier(returnIface),
+            undefined,
+            undefined,
+            query.columns.map((column, i) =>
+              factory.createPropertySignature(
+                undefined,
+                factory.createIdentifier(colName(i, column)),
+                undefined,
+                postgres.columnType(column),
+              ),
+            ),
+          ),
         );
       }
 
       switch (query.cmd) {
         case ":exec": {
-          nodes.push(driver.execDecl(lowerName, textName, argIface, query.params));
+          nodes.push(postgres.execDecl(lowerName, query.text, argIface, query.params));
           break;
         }
         case ":execlastid": {
-          nodes.push(driver.execlastidDecl(lowerName, textName, argIface, query.params));
+          nodes.push(postgres.execlastidDecl(lowerName, query.text, argIface, query.params));
           break;
         }
         case ":one": {
           nodes.push(
-            driver.oneDecl(
+            postgres.oneDecl(
               lowerName,
-              textName,
+              query.text,
               argIface,
               returnIface ?? "void",
               query.params,
@@ -173,9 +126,9 @@ ${query.text}`,
         }
         case ":many": {
           nodes.push(
-            driver.manyDecl(
+            postgres.manyDecl(
               lowerName,
-              textName,
+              query.text,
               argIface,
               returnIface ?? "void",
               query.params,
@@ -185,15 +138,14 @@ ${query.text}`,
           break;
         }
       }
-      if (nodes) {
-        files.push(
-          new File({
-            name: `${filename.replace(".", "_")}.ts`,
-            contents: new TextEncoder().encode(printNode(nodes)),
-          }),
-        );
-      }
     }
+
+    files.push(
+      new File({
+        name: `${filename.replace(".", "_")}.ts`,
+        contents: new TextEncoder().encode(printNode(nodes)),
+      }),
+    );
   }
 
   return new GenerateResponse({
@@ -207,87 +159,7 @@ function readInput(): GenerateRequest {
   return GenerateRequest.fromBinary(buffer);
 }
 
-function queryDecl(name: string, sql: string) {
-  return factory.createVariableStatement(
-    [factory.createToken(SyntaxKind.ExportKeyword)],
-    factory.createVariableDeclarationList(
-      [
-        factory.createVariableDeclaration(
-          factory.createIdentifier(name),
-          undefined,
-          undefined,
-          factory.createNoSubstitutionTemplateLiteral(sql, sql),
-        ),
-      ],
-      NodeFlags.Const, //| NodeFlags.Constant | NodeFlags.Constant
-    ),
-  );
-}
-
-function argsDecl(options: {
-  name: string;
-  driver: Driver;
-  params: Parameter[];
-  queryName: string;
-  fileName: string;
-}) {
-  const names = options.params.map((param, i) => argName(i, param.column));
-  assertUniqueNames({
-    kind: "argument",
-    queryName: options.queryName,
-    fileName: options.fileName,
-    names,
-  });
-
-  return factory.createInterfaceDeclaration(
-    [factory.createToken(SyntaxKind.ExportKeyword)],
-    factory.createIdentifier(options.name),
-    undefined,
-    undefined,
-    options.params.map((param, i) =>
-      factory.createPropertySignature(
-        undefined,
-        factory.createIdentifier(argName(i, param.column)),
-        undefined,
-        options.driver.columnType(param.column),
-      ),
-    ),
-  );
-}
-
-function rowDecl(options: {
-  name: string;
-  driver: Driver;
-  columns: Column[];
-  queryName: string;
-  fileName: string;
-}) {
-  const names = options.columns.map((column, i) => colName(i, column));
-  assertUniqueNames({
-    kind: "column",
-    queryName: options.queryName,
-    fileName: options.fileName,
-    names,
-  });
-
-  return factory.createInterfaceDeclaration(
-    [factory.createToken(SyntaxKind.ExportKeyword)],
-    factory.createIdentifier(options.name),
-    undefined,
-    undefined,
-    options.columns.map((column, i) =>
-      factory.createPropertySignature(
-        undefined,
-        factory.createIdentifier(colName(i, column)),
-        undefined,
-        options.driver.columnType(column),
-      ),
-    ),
-  );
-}
-
 function printNode(nodes: Node[]): string {
-  // https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API#creating-and-printing-a-typescript-ast
   const resultFile = createSourceFile(
     "file.ts",
     "",

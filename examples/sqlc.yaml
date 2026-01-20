@@ -10,79 +10,10 @@ sql:
   engine: "postgresql"
   codegen:
   - plugin: ts
-    out: node-pg/src/db
-    options:
-      runtime: node
-      driver: pg
-- schema: "authors/postgresql/schema.sql"
-  queries: "authors/postgresql/query.sql"
-  engine: "postgresql"
-  codegen:
-  - plugin: ts
-    out: bun-pg/src/db
-    options:
-      runtime: bun
-      driver: pg
-- schema: "authors/postgresql/schema.sql"
-  queries: "authors/postgresql/query.sql"
-  engine: "postgresql"
-  codegen:
-  - plugin: ts
     out: node-postgres/src/db
-    options:
-      runtime: node
-      driver: postgres
 - schema: "authors/postgresql/schema.sql"
   queries: "authors/postgresql/query.sql"
   engine: "postgresql"
   codegen:
   - plugin: ts
     out: bun-postgres/src/db
-    options:
-      runtime: bun
-      driver: postgres
-- schema: "authors/postgresql/schema.sql"
-  queries: "authors/postgresql/query.sql"
-  engine: "postgresql"
-  codegen:
-  - plugin: ts
-    out: bun-sql/src/db
-    options:
-      runtime: bun
-      driver: bun-sql
-- schema: "authors/postgresql/schema.sql"
-  queries: "authors/postgresql/query.sql"
-  engine: "postgresql"
-  codegen:
-  - plugin: ts
-    out: bun-sql-docker/src/db
-    options:
-      runtime: bun
-      driver: bun-sql
-- schema: "authors/mysql/schema.sql"
-  queries: "authors/mysql/query.sql"
-  engine: "mysql"
-  codegen:
-  - plugin: ts
-    out: node-mysql2/src/db
-    options:
-      runtime: node
-      driver: mysql2
-- schema: "authors/mysql/schema.sql"
-  queries: "authors/mysql/query.sql"
-  engine: "mysql"
-  codegen:
-  - plugin: ts
-    out: bun-mysql2/src/db
-    options:
-      runtime: bun
-      driver: mysql2
-- schema: "authors/sqlite/schema.sql"
-  queries: "authors/sqlite/query.sql"
-  engine: "sqlite"
-  codegen:
-  - plugin: ts
-    out: bun-sqlite/src/db
-    options:
-      runtime: bun
-      driver: bun-sqlite
