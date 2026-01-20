@@ -271,7 +271,7 @@ export class Driver {
     return factory.createUnionTypeNode([typ, factory.createLiteralTypeNode(factory.createNull())]);
   }
 
-  preamble(queries: unknown) {
+  preamble(_queries: unknown) {
     return [
       factory.createImportDeclaration(
         undefined,
@@ -556,10 +556,10 @@ export class Driver {
   }
 
   execlastidDecl(
-    funcName: string,
-    queryName: string,
-    argIface: string | undefined,
-    params: Parameter[],
+    _funcName: string,
+    _queryName: string,
+    _argIface: string | undefined,
+    _params: Parameter[],
   ): FunctionDeclaration {
     throw new Error("postgres driver currently does not support :execlastid");
   }

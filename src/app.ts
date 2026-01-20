@@ -1,7 +1,3 @@
-// I cant' get this import to work locally. The import in node_modules is
-// javy/dist but esbuild requires the import to be javy/fs
-//
-// @ts-expect-error
 import { readFileSync, writeFileSync, STDIO } from "javy/fs";
 import {
   EmitHint,
@@ -29,12 +25,9 @@ import {
 import { argName, colName } from "./drivers/utlis";
 import { rowValuesDecl } from "./decls";
 import { assertUniqueNames } from "./validate";
-import { Driver as Sqlite3Driver } from "./drivers/better-sqlite3";
 import { Driver as PgDriver } from "./drivers/pg";
 import { Driver as PostgresDriver } from "./drivers/postgres";
-import { Mysql2Options, Driver as MysqlDriver } from "./drivers/mysql2";
 import { Driver as BunSqlDriver } from "./drivers/bun-sql";
-import { Driver as BunSqliteDriver } from "./drivers/bun-sqlite";
 
 // Read input from stdin
 const input = readInput();
@@ -46,7 +39,6 @@ writeOutput(result);
 interface Options {
   runtime?: string;
   driver?: string;
-  mysql2?: Mysql2Options;
 }
 
 interface Driver {
@@ -79,9 +71,6 @@ interface Driver {
 
 function createNodeGenerator(options: Options): Driver {
   switch (options.driver) {
-    case "mysql2": {
-      return new MysqlDriver(options.mysql2);
-    }
     case "pg": {
       return new PgDriver();
     }
@@ -90,12 +79,6 @@ function createNodeGenerator(options: Options): Driver {
     }
     case "bun-sql": {
       return new BunSqlDriver();
-    }
-    case "bun-sqlite": {
-      return new BunSqliteDriver();
-    }
-    case "better-sqlite3": {
-      return new Sqlite3Driver();
     }
   }
   throw new Error(`unknown driver: ${options.driver}`);
