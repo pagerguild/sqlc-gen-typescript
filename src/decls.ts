@@ -11,12 +11,12 @@ export function rowValuesDecl(name: string, driver: ColumnTyper, columns: Column
     [factory.createToken(SyntaxKind.ExportKeyword)],
     factory.createIdentifier(name),
     undefined,
-    factory.createTupleTypeNode(columns.map((c) => driver.columnType(c)))
+    factory.createTupleTypeNode(columns.map((c) => driver.columnType(c))),
   );
 }
 
 export function arrayOfTypeRef(name: string) {
   return factory.createArrayTypeNode(
-    factory.createTypeReferenceNode(factory.createIdentifier(name), undefined)
+    factory.createTypeReferenceNode(factory.createIdentifier(name), undefined),
   );
 }

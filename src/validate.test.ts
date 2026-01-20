@@ -10,7 +10,7 @@ describe("assertUniqueNames", () => {
         queryName: "GetJobRunStats",
         fileName: "scheduled_job_runs.sql",
         names: ["startedAt", "startedAt"],
-      })
+      }),
     ).toThrow(/sqlc\.arg|named parameters/i);
   });
 
@@ -21,7 +21,7 @@ describe("assertUniqueNames", () => {
         queryName: "ListUsers",
         fileName: "users.sql",
         names: ["id", "createdAt"],
-      })
+      }),
     ).not.toThrow();
   });
 
@@ -32,7 +32,7 @@ describe("assertUniqueNames", () => {
         queryName: "ListJobRuns",
         fileName: "job_runs.sql",
         names: ["startedAt", "startedAt"],
-      })
+      }),
     ).toThrow(/sqlc\.arg|sqlc\.narg|column aliases|named parameters/i);
   });
 });

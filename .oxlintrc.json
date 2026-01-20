@@ -1,17 +1,17 @@
 {
-	"plugins": ["typescript", "import", "unicorn"],
-	"categories": {
-		"correctness": "error"
-	},
-	"rules": {
-		"import/order": [
-			"error",
-			{
-				"groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
-				"newlines-between": "always",
-				"alphabetize": { "order": "asc", "caseInsensitive": true }
-			}
-		]
-	},
-	"ignorePatterns": ["out.js", "src/gen/plugin/codegen_pb.ts", "examples/**", "node_modules/**"]
+  "plugins": ["typescript", "import", "unicorn"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "import/order": [
+      "error",
+      {
+        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
+        "newlines-between": "always",
+        "alphabetize": { "order": "asc", "caseInsensitive": true }
+      }
+    ]
+  },
+  "ignorePatterns": ["out.js", "src/gen/plugin/codegen_pb.ts", "examples/**", "node_modules/**"]
 }

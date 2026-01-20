@@ -46,23 +46,18 @@ writeOutput(result);
 interface Options {
   runtime?: string;
   driver?: string;
-  mysql2?: Mysql2Options
+  mysql2?: Mysql2Options;
 }
 
 interface Driver {
   preamble: (queries: Query[]) => Node[];
   columnType: (c?: Column) => TypeNode;
-  execDecl: (
-    name: string,
-    text: string,
-    iface: string | undefined,
-    params: Parameter[]
-  ) => Node;
+  execDecl: (name: string, text: string, iface: string | undefined, params: Parameter[]) => Node;
   execlastidDecl: (
     name: string,
     text: string,
     iface: string | undefined,
-    params: Parameter[]
+    params: Parameter[],
   ) => Node;
   manyDecl: (
     name: string,
@@ -70,7 +65,7 @@ interface Driver {
     argIface: string | undefined,
     returnIface: string,
     params: Parameter[],
-    columns: Column[]
+    columns: Column[],
   ) => Node;
   oneDecl: (
     name: string,
@@ -78,7 +73,7 @@ interface Driver {
     argIface: string | undefined,
     returnIface: string,
     params: Parameter[],
-    columns: Column[]
+    columns: Column[],
   ) => Node;
 }
 
@@ -129,19 +124,19 @@ function codegen(input: GenerateRequest): GenerateResponse {
     qs?.push(query);
   }
 
-    for (const [filename, queries] of querymap.entries()) {
-      const nodes = driver.preamble(queries);
+  for (const [filename, queries] of querymap.entries()) {
+    const nodes = driver.preamble(queries);
 
-      for (const query of queries) {
-        const lowerName = query.name[0].toLowerCase() + query.name.slice(1);
+    for (const query of queries) {
+      const lowerName = query.name[0].toLowerCase() + query.name.slice(1);
       const textName = `${lowerName}Query`;
 
       nodes.push(
         queryDecl(
           textName,
           `-- name: ${query.name} ${query.cmd}
-${query.text}`
-        )
+${query.text}`,
+        ),
       );
 
       let argIface = undefined;
@@ -155,7 +150,7 @@ ${query.text}`
             params: query.params,
             queryName: query.name,
             fileName: filename,
-          })
+          }),
         );
       }
       if (query.columns.length > 0) {
@@ -167,22 +162,18 @@ ${query.text}`
             columns: query.columns,
             queryName: query.name,
             fileName: filename,
-          })
+          }),
         );
         nodes.push(rowValuesDecl(`${returnIface}Values`, driver, query.columns));
       }
 
       switch (query.cmd) {
         case ":exec": {
-          nodes.push(
-            driver.execDecl(lowerName, textName, argIface, query.params)
-          );
+          nodes.push(driver.execDecl(lowerName, textName, argIface, query.params));
           break;
         }
         case ":execlastid": {
-          nodes.push(
-            driver.execlastidDecl(lowerName, textName, argIface, query.params)
-          );
+          nodes.push(driver.execlastidDecl(lowerName, textName, argIface, query.params));
           break;
         }
         case ":one": {
@@ -193,8 +184,8 @@ ${query.text}`
               argIface,
               returnIface ?? "void",
               query.params,
-              query.columns
-            )
+              query.columns,
+            ),
           );
           break;
         }
@@ -206,8 +197,8 @@ ${query.text}`
               argIface,
               returnIface ?? "void",
               query.params,
-              query.columns
-            )
+              query.columns,
+            ),
           );
           break;
         }
@@ -217,7 +208,7 @@ ${query.text}`
           new File({
             name: `${filename.replace(".", "_")}.ts`,
             contents: new TextEncoder().encode(printNode(nodes)),
-          })
+          }),
         );
       }
     }
@@ -243,11 +234,11 @@ function queryDecl(name: string, sql: string) {
           factory.createIdentifier(name),
           undefined,
           undefined,
-          factory.createNoSubstitutionTemplateLiteral(sql, sql)
+          factory.createNoSubstitutionTemplateLiteral(sql, sql),
         ),
       ],
-      NodeFlags.Const //| NodeFlags.Constant | NodeFlags.Constant
-    )
+      NodeFlags.Const, //| NodeFlags.Constant | NodeFlags.Constant
+    ),
   );
 }
 
@@ -276,9 +267,9 @@ function argsDecl(options: {
         undefined,
         factory.createIdentifier(argName(i, param.column)),
         undefined,
-        options.driver.columnType(param.column)
-      )
-    )
+        options.driver.columnType(param.column),
+      ),
+    ),
   );
 }
 
@@ -307,9 +298,9 @@ function rowDecl(options: {
         undefined,
         factory.createIdentifier(colName(i, column)),
         undefined,
-        options.driver.columnType(column)
-      )
-    )
+        options.driver.columnType(column),
+      ),
+    ),
   );
 }
 
@@ -320,7 +311,7 @@ function printNode(nodes: Node[]): string {
     "",
     ScriptTarget.Latest,
     /*setParentNodes*/ false,
-    ScriptKind.TS
+    ScriptKind.TS,
   );
   const printer = createPrinter({ newLine: NewLineKind.LineFeed });
   let output = "// Code generated by sqlc. DO NOT EDIT.\n\n";

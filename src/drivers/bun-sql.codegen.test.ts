@@ -13,13 +13,7 @@ import { rowValuesDecl } from "../decls";
 import type { Column, Parameter } from "../gen/plugin/codegen_pb";
 
 function print(node: unknown): string {
-  const source = createSourceFile(
-    "file.ts",
-    "",
-    ScriptTarget.Latest,
-    false,
-    ScriptKind.TS
-  );
+  const source = createSourceFile("file.ts", "", ScriptTarget.Latest, false, ScriptKind.TS);
   const printer = createPrinter({ newLine: NewLineKind.LineFeed });
   // @ts-expect-error printer expects a ts.Node
   return printer.printNode(EmitHint.Unspecified, node, source);
@@ -31,14 +25,14 @@ describe("bun-sql driver codegen", () => {
 
     const params: Parameter[] = [
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ column: { name: "organization_id", type: { name: "int8" } } } as unknown as Parameter),
+      { column: { name: "organization_id", type: { name: "int8" } } } as unknown as Parameter,
     ];
 
     const columns: Column[] = [
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "id", type: { name: "int8" } } as unknown as Column),
+      { name: "id", type: { name: "int8" } } as unknown as Column,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "created_at", type: { name: "timestamptz" } } as unknown as Column),
+      { name: "created_at", type: { name: "timestamptz" } } as unknown as Column,
     ];
 
     const node = driver.manyDecl(
@@ -47,7 +41,7 @@ describe("bun-sql driver codegen", () => {
       "ListThingsArgs",
       "ListThingsRow",
       params,
-      columns
+      columns,
     );
 
     const output = print(node);
@@ -61,12 +55,12 @@ describe("bun-sql driver codegen", () => {
 
     const params: Parameter[] = [
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ column: { name: "id", type: { name: "int8" } } } as unknown as Parameter),
+      { column: { name: "id", type: { name: "int8" } } } as unknown as Parameter,
     ];
 
     const columns: Column[] = [
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "id", type: { name: "int8" } } as unknown as Column),
+      { name: "id", type: { name: "int8" } } as unknown as Column,
     ];
 
     const node = driver.oneDecl(
@@ -75,7 +69,7 @@ describe("bun-sql driver codegen", () => {
       "GetThingArgs",
       "GetThingRow",
       params,
-      columns
+      columns,
     );
 
     const output = print(node);
@@ -89,11 +83,11 @@ describe("bun-sql driver codegen", () => {
 
     const columns: Column[] = [
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "id", type: { name: "bigint" }, notNull: true } as unknown as Column),
+      { name: "id", type: { name: "bigint" }, notNull: true } as unknown as Column,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "name", type: { name: "text" }, notNull: true } as unknown as Column),
+      { name: "name", type: { name: "text" }, notNull: true } as unknown as Column,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "nullable_id", type: { name: "int8" }, notNull: false } as unknown as Column),
+      { name: "nullable_id", type: { name: "int8" }, notNull: false } as unknown as Column,
     ];
 
     const node = driver.manyDecl(
@@ -102,7 +96,7 @@ describe("bun-sql driver codegen", () => {
       undefined,
       "ListThingsRow",
       params,
-      columns
+      columns,
     );
 
     const output = print(node);
@@ -122,9 +116,9 @@ describe("bun-sql driver codegen", () => {
 
     const columns: Column[] = [
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "id", type: { name: "bigserial" }, notNull: true } as unknown as Column),
+      { name: "id", type: { name: "bigserial" }, notNull: true } as unknown as Column,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "parent_id", type: { name: "serial8" }, notNull: false } as unknown as Column),
+      { name: "parent_id", type: { name: "serial8" }, notNull: false } as unknown as Column,
     ];
 
     const node = driver.oneDecl(
@@ -133,7 +127,7 @@ describe("bun-sql driver codegen", () => {
       undefined,
       "GetThingRow",
       params,
-      columns
+      columns,
     );
 
     const output = print(node);
@@ -148,23 +142,27 @@ describe("bun-sql driver codegen", () => {
     const driver = new BunSqlDriver();
     const columns: Column[] = [
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "a", type: { name: "int" }, notNull: true } as unknown as Column),
+      { name: "a", type: { name: "int" }, notNull: true } as unknown as Column,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "b", type: { name: "integer" }, notNull: true } as unknown as Column),
+      { name: "b", type: { name: "integer" }, notNull: true } as unknown as Column,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "c", type: { name: "bigint" }, notNull: true } as unknown as Column),
+      { name: "c", type: { name: "bigint" }, notNull: true } as unknown as Column,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "d", type: { name: "double precision" }, notNull: true } as unknown as Column),
+      { name: "d", type: { name: "double precision" }, notNull: true } as unknown as Column,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "e", type: { name: "smallint" }, notNull: true } as unknown as Column),
+      { name: "e", type: { name: "smallint" }, notNull: true } as unknown as Column,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "f", type: { name: "real" }, notNull: true } as unknown as Column),
+      { name: "f", type: { name: "real" }, notNull: true } as unknown as Column,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "g", type: { name: "timestamp with time zone" }, notNull: true } as unknown as Column),
+      { name: "g", type: { name: "timestamp with time zone" }, notNull: true } as unknown as Column,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "h", type: { name: "timestamp without time zone" }, notNull: true } as unknown as Column),
+      {
+        name: "h",
+        type: { name: "timestamp without time zone" },
+        notNull: true,
+      } as unknown as Column,
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ({ name: "i", type: { name: "character varying" }, notNull: true } as unknown as Column),
+      { name: "i", type: { name: "character varying" }, notNull: true } as unknown as Column,
     ];
 
     const node = rowValuesDecl("AliasRowValues", driver, columns);
@@ -173,7 +171,7 @@ describe("bun-sql driver codegen", () => {
     expect(output).toContain("export type AliasRowValues");
     // bigint is now mapped to number (with runtime Number() conversion)
     expect(output).toMatch(
-      /\[\s*number,\s*number,\s*number,\s*number,\s*number,\s*number,\s*Date,\s*Date,\s*string\s*\]/
+      /\[\s*number,\s*number,\s*number,\s*number,\s*number,\s*number,\s*Date,\s*Date,\s*string\s*\]/,
     );
   });
 });

@@ -1,5 +1,4 @@
-const NAMED_PARAMS_DOCS_URL =
-  "https://docs.sqlc.dev/en/latest/howto/named_parameters.html";
+const NAMED_PARAMS_DOCS_URL = "https://docs.sqlc.dev/en/latest/howto/named_parameters.html";
 
 export function assertUniqueNames(options: {
   kind: "argument" | "column";
@@ -26,12 +25,12 @@ export function assertUniqueNames(options: {
   throw new Error(
     [
       `sqlc-gen-typescript: ambiguous ${options.kind} names for query '${options.queryName}' (${options.fileName})`,
-      "", 
+      "",
       "The TypeScript generator produced duplicate identifier(s):",
       duplicateList,
       "",
       "Disambiguate using named parameters (sqlc.arg/sqlc.narg) or explicit column aliases.",
       `Docs: ${NAMED_PARAMS_DOCS_URL}`,
-    ].join("\n")
+    ].join("\n"),
   );
 }

@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > This is PagerGuild's fork of sqlc-gen-typescript with additional features cherry-picked from upstream PRs.
-> 
+>
 > **Upstream Repository:** https://github.com/sqlc-dev/sqlc-gen-typescript
 
 > [!CAUTION]
@@ -12,9 +12,9 @@
 
 This fork includes the following changes not yet merged upstream:
 
-| PR | Description | Status Upstream |
-|----|-------------|-----------------|
-| [#58](https://github.com/sqlc-dev/sqlc-gen-typescript/pull/58) | Native Bun SQL and SQLite drivers | Open |
+| PR                                                             | Description                       | Status Upstream |
+| -------------------------------------------------------------- | --------------------------------- | --------------- |
+| [#58](https://github.com/sqlc-dev/sqlc-gen-typescript/pull/58) | Native Bun SQL and SQLite drivers | Open            |
 
 ## Complete Docker Example
 
@@ -30,6 +30,7 @@ cd examples/bun-sql-docker
 ```
 
 This script will:
+
 1. Start a PostgreSQL container (`postgres:alpine`)
 2. Create the database schema
 3. Run a comprehensive test program exercising all CRUD operations
@@ -64,28 +65,32 @@ git fetch upstream
 When upstream merges a PR that we've already applied (e.g., PR #58), follow these steps to rebase:
 
 1. **Fetch the latest upstream changes:**
+
    ```bash
    git fetch upstream
    ```
 
 2. **Create a backup branch:**
+
    ```bash
    git checkout main
    git checkout -b main-backup-$(date +%Y%m%d)
    ```
 
 3. **Rebase onto upstream, dropping our cherry-picked commits:**
+
    ```bash
    git checkout main
    git rebase -i upstream/main
    ```
-   
+
    In the interactive rebase, look for commits with messages like:
    - `Apply upstream PR #58: ...`
-   
+
    These can be **dropped** (delete the line or change `pick` to `drop`) since upstream now has the equivalent changes.
 
 4. **Push the rebased main:**
+
    ```bash
    git push origin main --force-with-lease
    ```
@@ -103,18 +108,21 @@ When upstream merges a PR that we've already applied (e.g., PR #58), follow thes
 To apply a new upstream PR that hasn't been merged:
 
 1. **Create a feature branch:**
+
    ```bash
    git checkout main
    git checkout -b upstream-pr-XX
    ```
 
 2. **Fetch and apply the PR:**
+
    ```bash
    gh pr diff XX --repo sqlc-dev/sqlc-gen-typescript > /tmp/prXX.patch
    git apply /tmp/prXX.patch
    ```
 
 3. **Commit with upstream reference:**
+
    ```bash
    git add -A
    git commit -m "Apply upstream PR #XX: <title>
@@ -151,22 +159,22 @@ git log upstream/main..main --oneline
 ## Usage
 
 ```yaml
-version: '2'
+version: "2"
 plugins:
-- name: ts
-  wasm:
-    url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.3.wasm
-    sha256: 287df8f6cc06377d67ad5ba02c9e0f00c585509881434d15ea8bd9fc751a9368
+  - name: ts
+    wasm:
+      url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.3.wasm
+      sha256: 287df8f6cc06377d67ad5ba02c9e0f00c585509881434d15ea8bd9fc751a9368
 sql:
-- schema: "schema.sql"
-  queries: "query.sql"
-  engine: postgresql
-  codegen:
-  - out: src/authors
-    plugin: ts
-    options:
-      runtime: node
-      driver: postgres
+  - schema: "schema.sql"
+    queries: "query.sql"
+    engine: postgresql
+    codegen:
+      - out: src/authors
+        plugin: ts
+        options:
+          runtime: node
+          driver: postgres
 ```
 
 ## Supported engines and drivers
@@ -212,10 +220,10 @@ cloud:
   # Replace <PROJECT_ID> with your project ID from the sqlc Cloud dashboard
   project: "<PROJECT_ID>"
 plugins:
-- name: ts
-  wasm:
-    url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.3.wasm
-    sha256: 287df8f6cc06377d67ad5ba02c9e0f00c585509881434d15ea8bd9fc751a9368
+  - name: ts
+    wasm:
+      url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.3.wasm
+      sha256: 287df8f6cc06377d67ad5ba02c9e0f00c585509881434d15ea8bd9fc751a9368
 sql:
   - engine: "postgresql"
     queries: "query.sql"
@@ -223,11 +231,11 @@ sql:
     database:
       managed: true
     codegen:
-    - out: db
-      plugin: ts
-      options:
-        runtime: node
-        driver: pg
+      - out: db
+        plugin: ts
+        options:
+          runtime: node
+          driver: pg
 ```
 
 Replace `<PROJECT_ID>` with your project ID from the sqlc Cloud dashboard. It
@@ -324,12 +332,7 @@ Create a file named `index.ts` and add the following contents:
 ```ts
 import { Pool } from "pg";
 
-import {
-  createAuthor,
-  deleteAuthor,
-  getAuthor,
-  listAuthors,
-} from "./db/query_sql";
+import { createAuthor, deleteAuthor, getAuthor, listAuthors } from "./db/query_sql";
 
 async function main() {
   const client = new Pool({ connectionString: process.env["DATABASE_URL"] });
@@ -342,7 +345,7 @@ async function main() {
   // create an author
   const author = await createAuthor(client, {
     name: "Anders Hejlsberg",
-	bio: "Original author of Turbo Pascal and co-creator of TypeScript",
+    bio: "Original author of Turbo Pascal and co-creator of TypeScript",
   });
   if (author === null) {
     throw new Error("author not created");
@@ -362,7 +365,7 @@ async function main() {
 
 (async () => {
   await main();
-  process.exit()
+  process.exit();
 })();
 ```
 
@@ -397,127 +400,127 @@ applications.
 ### PostgreSQL and node-postgres
 
 ```yaml
-version: '2'
+version: "2"
 plugins:
-- name: ts
-  wasm:
-    url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.3.wasm
-    sha256: 287df8f6cc06377d67ad5ba02c9e0f00c585509881434d15ea8bd9fc751a9368
+  - name: ts
+    wasm:
+      url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.3.wasm
+      sha256: 287df8f6cc06377d67ad5ba02c9e0f00c585509881434d15ea8bd9fc751a9368
 sql:
-- schema: "schema.sql"
-  queries: "query.sql"
-  engine: postgresql
-  codegen:
-  - out: db
-    plugin: ts
-    options:
-      runtime: node
-      driver: pg # npm package name
+  - schema: "schema.sql"
+    queries: "query.sql"
+    engine: postgresql
+    codegen:
+      - out: db
+        plugin: ts
+        options:
+          runtime: node
+          driver: pg # npm package name
 ```
 
 ### PostgreSQL and postgres.js
 
 ```yaml
-version: '2'
+version: "2"
 plugins:
-- name: ts
-  wasm:
-    url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.3.wasm
-    sha256: 287df8f6cc06377d67ad5ba02c9e0f00c585509881434d15ea8bd9fc751a9368
+  - name: ts
+    wasm:
+      url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.3.wasm
+      sha256: 287df8f6cc06377d67ad5ba02c9e0f00c585509881434d15ea8bd9fc751a9368
 sql:
-- schema: "schema.sql"
-  queries: "query.sql"
-  engine: postgresql
-  codegen:
-  - out: db
-    plugin: ts
-    options:
-      runtime: node
-      driver: postgres # npm package name
+  - schema: "schema.sql"
+    queries: "query.sql"
+    engine: postgresql
+    codegen:
+      - out: db
+        plugin: ts
+        options:
+          runtime: node
+          driver: postgres # npm package name
 ```
 
 ### PostgreSQL and Bun SQL
 
 ```yaml
-version: '2'
+version: "2"
 plugins:
-- name: ts
-  wasm:
-    url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.4.wasm
-    sha256: 9b2f4eca095a3ba1f0f5e971e371ae52f991396efdb63728fc3e8df92c31ff5f
+  - name: ts
+    wasm:
+      url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.4.wasm
+      sha256: 9b2f4eca095a3ba1f0f5e971e371ae52f991396efdb63728fc3e8df92c31ff5f
 sql:
-- schema: "schema.sql"
-  queries: "query.sql"
-  engine: postgresql
-  codegen:
-  - out: db
-    plugin: ts
-    options:
-      runtime: bun
-      driver: bun-sql # to use native SQL library of Bun 1.2
+  - schema: "schema.sql"
+    queries: "query.sql"
+    engine: postgresql
+    codegen:
+      - out: db
+        plugin: ts
+        options:
+          runtime: bun
+          driver: bun-sql # to use native SQL library of Bun 1.2
 ```
 
 ### MySQL and mysql2
 
 ```yaml
-version: '2'
+version: "2"
 plugins:
-- name: ts
-  wasm:
-    url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.3.wasm
-    sha256: 287df8f6cc06377d67ad5ba02c9e0f00c585509881434d15ea8bd9fc751a9368
+  - name: ts
+    wasm:
+      url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.3.wasm
+      sha256: 287df8f6cc06377d67ad5ba02c9e0f00c585509881434d15ea8bd9fc751a9368
 sql:
-- schema: "schema.sql"
-  queries: "query.sql"
-  engine: "mysql"
-  codegen:
-  - out: db
-    plugin: ts
-    options:
-      runtime: node
-      driver: mysql2 # npm package name
+  - schema: "schema.sql"
+    queries: "query.sql"
+    engine: "mysql"
+    codegen:
+      - out: db
+        plugin: ts
+        options:
+          runtime: node
+          driver: mysql2 # npm package name
 ```
 
 ### SQLite and better-sqlite3 (Beta)
 
 ```yaml
-version: '2'
+version: "2"
 plugins:
-- name: ts
-  wasm:
-    url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.3.wasm
-    sha256: 287df8f6cc06377d67ad5ba02c9e0f00c585509881434d15ea8bd9fc751a9368
+  - name: ts
+    wasm:
+      url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.3.wasm
+      sha256: 287df8f6cc06377d67ad5ba02c9e0f00c585509881434d15ea8bd9fc751a9368
 sql:
-- schema: "schema.sql"
-  queries: "query.sql"
-  engine: sqlite
-  codegen:
-  - out: db
-    plugin: ts
-    options:
-      runtime: node
-      driver: better-sqlite3 # npm package name
+  - schema: "schema.sql"
+    queries: "query.sql"
+    engine: sqlite
+    codegen:
+      - out: db
+        plugin: ts
+        options:
+          runtime: node
+          driver: better-sqlite3 # npm package name
 ```
 
 ### SQLite and Bun SQLite
 
 ```yaml
-version: '2'
+version: "2"
 plugins:
-- name: ts
-  wasm:
-    url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.4.wasm
-    sha256: 9b2f4eca095a3ba1f0f5e971e371ae52f991396efdb63728fc3e8df92c31ff5f
+  - name: ts
+    wasm:
+      url: https://downloads.sqlc.dev/plugin/sqlc-gen-typescript_0.1.4.wasm
+      sha256: 9b2f4eca095a3ba1f0f5e971e371ae52f991396efdb63728fc3e8df92c31ff5f
 sql:
-- schema: "schema.sql"
-  queries: "query.sql"
-  engine: sqlite
-  codegen:
-  - out: db
-    plugin: ts
-    options:
-      runtime: bun
-      driver: bun-sqlite # to use native SQLite library of Bun
+  - schema: "schema.sql"
+    queries: "query.sql"
+    engine: sqlite
+    codegen:
+      - out: db
+        plugin: ts
+        options:
+          runtime: bun
+          driver: bun-sqlite # to use native SQLite library of Bun
 ```
 
 ## Development
@@ -525,6 +528,7 @@ sql:
 If you want to build and test sqlc-gen-typescript locally, follow these steps:
 
 1. Clone the repository and install dependencies:
+
    ```
    git clone https://github.com/sqlc-dev/sqlc-gen-typescript.git
    cd sqlc-gen-typescript
@@ -534,12 +538,14 @@ If you want to build and test sqlc-gen-typescript locally, follow these steps:
 2. Make your desired changes to the codebase. The main source files are located in the `src` directory.
 
 3. If you've made changes that require updating dependencies, run:
+
    ```
    npm install
    ```
 
 4. Build the WASM plugin:  
-Check the `Makefile` for details.
+   Check the `Makefile` for details.
+
    ```
    make out.js
 
@@ -550,22 +556,22 @@ Check the `Makefile` for details.
 5. To test your local build, create a test project with a `sqlc.yaml` file containing:
 
    ```yaml
-   version: '2'
+   version: "2"
    plugins:
-   - name: ts
-     wasm:
-       url: file://{path_to_your_local_wasm_file}
-       sha256: {sha256_of_your_wasm_file}
+     - name: ts
+       wasm:
+         url: file://{path_to_your_local_wasm_file}
+         sha256: { sha256_of_your_wasm_file }
    sql:
-   - schema: "schema.sql"
-     queries: "query.sql"
-     engine: {your_database_engine}
-     codegen:
-     - out: db
-       plugin: ts
-       options:
-         runtime: node
-         driver: {your_database_driver}
+     - schema: "schema.sql"
+       queries: "query.sql"
+       engine: { your_database_engine }
+       codegen:
+         - out: db
+           plugin: ts
+           options:
+             runtime: node
+             driver: { your_database_driver }
    ```
 
    Replace the placeholders with appropriate values for your setup.

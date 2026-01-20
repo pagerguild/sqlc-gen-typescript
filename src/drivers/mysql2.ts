@@ -17,11 +17,8 @@ function funcParamsDecl(iface: string | undefined, params: Parameter[]) {
       undefined,
       factory.createIdentifier("client"),
       undefined,
-      factory.createTypeReferenceNode(
-        factory.createIdentifier("Client"),
-        undefined
-      ),
-      undefined
+      factory.createTypeReferenceNode(factory.createIdentifier("Client"), undefined),
+      undefined,
     ),
   ];
 
@@ -32,12 +29,9 @@ function funcParamsDecl(iface: string | undefined, params: Parameter[]) {
         undefined,
         factory.createIdentifier("args"),
         undefined,
-        factory.createTypeReferenceNode(
-          factory.createIdentifier(iface),
-          undefined
-        ),
-        undefined
-      )
+        factory.createTypeReferenceNode(factory.createIdentifier(iface), undefined),
+        undefined,
+      ),
     );
   }
 
@@ -45,10 +39,10 @@ function funcParamsDecl(iface: string | undefined, params: Parameter[]) {
 }
 
 export class Driver {
-  private readonly options: Mysql2Options
+  private readonly options: Mysql2Options;
 
   constructor(options?: Mysql2Options) {
-    this.options = options ?? {}
+    this.options = options ?? {};
   }
 
   columnType(column?: Column): TypeNode {
@@ -63,36 +57,27 @@ export class Driver {
 
         if (this.options.support_big_numbers) {
           if (this.options.big_number_strings) {
-            typ = factory.createKeywordTypeNode(SyntaxKind.StringKeyword)
+            typ = factory.createKeywordTypeNode(SyntaxKind.StringKeyword);
           } else {
             typ = factory.createUnionTypeNode([
               factory.createKeywordTypeNode(SyntaxKind.NumberKeyword),
-              factory.createKeywordTypeNode(SyntaxKind.StringKeyword)
-            ])
+              factory.createKeywordTypeNode(SyntaxKind.StringKeyword),
+            ]);
           }
         }
 
         break;
       }
       case "binary": {
-        typ = factory.createTypeReferenceNode(
-          factory.createIdentifier("Buffer"),
-          undefined
-        );
+        typ = factory.createTypeReferenceNode(factory.createIdentifier("Buffer"), undefined);
         break;
       }
       case "bit": {
-        typ = factory.createTypeReferenceNode(
-          factory.createIdentifier("Buffer"),
-          undefined
-        );
+        typ = factory.createTypeReferenceNode(factory.createIdentifier("Buffer"), undefined);
         break;
       }
       case "blob": {
-        typ = factory.createTypeReferenceNode(
-          factory.createIdentifier("Buffer"),
-          undefined
-        );
+        typ = factory.createTypeReferenceNode(factory.createIdentifier("Buffer"), undefined);
         break;
       }
       case "char": {
@@ -100,17 +85,11 @@ export class Driver {
         break;
       }
       case "date": {
-        typ = factory.createTypeReferenceNode(
-          factory.createIdentifier("Date"),
-          undefined
-        );
+        typ = factory.createTypeReferenceNode(factory.createIdentifier("Date"), undefined);
         break;
       }
       case "datetime": {
-        typ = factory.createTypeReferenceNode(
-          factory.createIdentifier("Date"),
-          undefined
-        );
+        typ = factory.createTypeReferenceNode(factory.createIdentifier("Date"), undefined);
         break;
       }
       case "decimal": {
@@ -130,10 +109,7 @@ export class Driver {
         break;
       }
       case "longblob": {
-        typ = factory.createTypeReferenceNode(
-          factory.createIdentifier("Buffer"),
-          undefined
-        );
+        typ = factory.createTypeReferenceNode(factory.createIdentifier("Buffer"), undefined);
         break;
       }
       case "longtext": {
@@ -141,10 +117,7 @@ export class Driver {
         break;
       }
       case "mediumblob": {
-        typ = factory.createTypeReferenceNode(
-          factory.createIdentifier("Buffer"),
-          undefined
-        );
+        typ = factory.createTypeReferenceNode(factory.createIdentifier("Buffer"), undefined);
         break;
       }
       case "mediumint": {
@@ -168,17 +141,11 @@ export class Driver {
         break;
       }
       case "timestamp": {
-        typ = factory.createTypeReferenceNode(
-          factory.createIdentifier("Date"),
-          undefined
-        );
+        typ = factory.createTypeReferenceNode(factory.createIdentifier("Date"), undefined);
         break;
       }
       case "tinyblob": {
-        typ = factory.createTypeReferenceNode(
-          factory.createIdentifier("Buffer"),
-          undefined
-        );
+        typ = factory.createTypeReferenceNode(factory.createIdentifier("Buffer"), undefined);
         break;
       }
       case "tinyint": {
@@ -194,10 +161,7 @@ export class Driver {
         break;
       }
       case "varbinary": {
-        typ = factory.createTypeReferenceNode(
-          factory.createIdentifier("Buffer"),
-          undefined
-        );
+        typ = factory.createTypeReferenceNode(factory.createIdentifier("Buffer"), undefined);
         break;
       }
       case "varchar": {
@@ -217,16 +181,11 @@ export class Driver {
     if (column.notNull) {
       return typ;
     }
-    return factory.createUnionTypeNode([
-      typ,
-      factory.createLiteralTypeNode(factory.createNull()),
-    ]);
+    return factory.createUnionTypeNode([typ, factory.createLiteralTypeNode(factory.createNull())]);
   }
 
   preamble(queries: Query[]) {
-    const hasExecLastIdCmd = queries.some(
-      (query) => query.cmd === ":execlastid"
-    );
+    const hasExecLastIdCmd = queries.some((query) => query.cmd === ":execlastid");
     return [
       factory.createImportDeclaration(
         undefined,
@@ -237,21 +196,21 @@ export class Driver {
             factory.createImportSpecifier(
               false,
               undefined,
-              factory.createIdentifier("RowDataPacket")
+              factory.createIdentifier("RowDataPacket"),
             ),
             ...(hasExecLastIdCmd
               ? [
                   factory.createImportSpecifier(
                     false,
                     undefined,
-                    factory.createIdentifier("ResultSetHeader")
+                    factory.createIdentifier("ResultSetHeader"),
                   ),
                 ]
               : []),
-          ])
+          ]),
         ),
         factory.createStringLiteral("mysql2/promise"),
-        undefined
+        undefined,
       ),
       factory.createTypeAliasDeclaration(
         undefined,
@@ -261,35 +220,27 @@ export class Driver {
           factory.createTypeReferenceNode(
             factory.createQualifiedName(
               factory.createIdentifier("mysql"),
-              factory.createIdentifier("Connection")
+              factory.createIdentifier("Connection"),
             ),
-            undefined
+            undefined,
           ),
           factory.createTypeReferenceNode(
             factory.createQualifiedName(
               factory.createIdentifier("mysql"),
-              factory.createIdentifier("Pool")
+              factory.createIdentifier("Pool"),
             ),
-            undefined
+            undefined,
           ),
-        ])
+        ]),
       ),
     ];
   }
 
-  execDecl(
-    funcName: string,
-    queryName: string,
-    argIface: string | undefined,
-    params: Parameter[]
-  ) {
+  execDecl(funcName: string, queryName: string, argIface: string | undefined, params: Parameter[]) {
     const funcParams = funcParamsDecl(argIface, params);
 
     return factory.createFunctionDeclaration(
-      [
-        factory.createToken(SyntaxKind.ExportKeyword),
-        factory.createToken(SyntaxKind.AsyncKeyword),
-      ],
+      [factory.createToken(SyntaxKind.ExportKeyword), factory.createToken(SyntaxKind.AsyncKeyword)],
       undefined,
       factory.createIdentifier(funcName),
       undefined,
@@ -304,7 +255,7 @@ export class Driver {
               factory.createCallExpression(
                 factory.createPropertyAccessExpression(
                   factory.createIdentifier("client"),
-                  factory.createIdentifier("query")
+                  factory.createIdentifier("query"),
                 ),
                 undefined,
                 [
@@ -312,7 +263,7 @@ export class Driver {
                     [
                       factory.createPropertyAssignment(
                         factory.createIdentifier("sql"),
-                        factory.createIdentifier(queryName)
+                        factory.createIdentifier(queryName),
                       ),
                       factory.createPropertyAssignment(
                         factory.createIdentifier("values"),
@@ -320,22 +271,22 @@ export class Driver {
                           params.map((param, i) =>
                             factory.createPropertyAccessExpression(
                               factory.createIdentifier("args"),
-                              factory.createIdentifier(argName(i, param.column))
-                            )
+                              factory.createIdentifier(argName(i, param.column)),
+                            ),
                           ),
-                          false
-                        )
+                          false,
+                        ),
                       ),
                     ],
-                    true
+                    true,
                   ),
-                ]
-              )
-            )
+                ],
+              ),
+            ),
           ),
         ],
-        true
-      )
+        true,
+      ),
     );
   }
 
@@ -345,25 +296,19 @@ export class Driver {
     argIface: string | undefined,
     returnIface: string,
     params: Parameter[],
-    columns: Column[]
+    columns: Column[],
   ) {
     const funcParams = funcParamsDecl(argIface, params);
 
     return factory.createFunctionDeclaration(
-      [
-        factory.createToken(SyntaxKind.ExportKeyword),
-        factory.createToken(SyntaxKind.AsyncKeyword),
-      ],
+      [factory.createToken(SyntaxKind.ExportKeyword), factory.createToken(SyntaxKind.AsyncKeyword)],
       undefined,
       factory.createIdentifier(funcName),
       undefined,
       funcParams,
       factory.createTypeReferenceNode(factory.createIdentifier("Promise"), [
         factory.createArrayTypeNode(
-          factory.createTypeReferenceNode(
-            factory.createIdentifier(returnIface),
-            undefined
-          )
+          factory.createTypeReferenceNode(factory.createIdentifier(returnIface), undefined),
         ),
       ]),
       factory.createBlock(
@@ -378,7 +323,7 @@ export class Driver {
                       undefined,
                       undefined,
                       factory.createIdentifier("rows"),
-                      undefined
+                      undefined,
                     ),
                   ]),
                   undefined,
@@ -387,14 +332,14 @@ export class Driver {
                     factory.createCallExpression(
                       factory.createPropertyAccessExpression(
                         factory.createIdentifier("client"),
-                        factory.createIdentifier("query")
+                        factory.createIdentifier("query"),
                       ),
                       [
                         factory.createArrayTypeNode(
                           factory.createTypeReferenceNode(
                             factory.createIdentifier("RowDataPacket"),
-                            undefined
-                          )
+                            undefined,
+                          ),
                         ),
                       ],
                       [
@@ -402,7 +347,7 @@ export class Driver {
                           [
                             factory.createPropertyAssignment(
                               factory.createIdentifier("sql"),
-                              factory.createIdentifier(queryName)
+                              factory.createIdentifier(queryName),
                             ),
                             factory.createPropertyAssignment(
                               factory.createIdentifier("values"),
@@ -410,24 +355,22 @@ export class Driver {
                                 params.map((param, i) =>
                                   factory.createPropertyAccessExpression(
                                     factory.createIdentifier("args"),
-                                    factory.createIdentifier(
-                                      argName(i, param.column)
-                                    )
-                                  )
+                                    factory.createIdentifier(argName(i, param.column)),
+                                  ),
                                 ),
-                                false
-                              )
+                                false,
+                              ),
                             ),
                             factory.createPropertyAssignment(
                               factory.createIdentifier("rowsAsArray"),
-                              factory.createTrue()
+                              factory.createTrue(),
                             ),
                           ],
-                          true
+                          true,
                         ),
-                      ]
-                    )
-                  )
+                      ],
+                    ),
+                  ),
                 ),
               ],
               NodeFlags.Const |
@@ -435,14 +378,14 @@ export class Driver {
                 NodeFlags.AwaitContext |
                 // NodeFlags.Constant |
                 NodeFlags.ContextFlags |
-                NodeFlags.TypeExcludesFlags
-            )
+                NodeFlags.TypeExcludesFlags,
+            ),
           ),
           factory.createReturnStatement(
             factory.createCallExpression(
               factory.createPropertyAccessExpression(
                 factory.createIdentifier("rows"),
-                factory.createIdentifier("map")
+                factory.createIdentifier("map"),
               ),
               undefined,
               [
@@ -456,7 +399,7 @@ export class Driver {
                       factory.createIdentifier("row"),
                       undefined,
                       undefined,
-                      undefined
+                      undefined,
                     ),
                   ],
                   undefined,
@@ -470,23 +413,23 @@ export class Driver {
                               factory.createIdentifier(colName(i, col)),
                               factory.createElementAccessExpression(
                                 factory.createIdentifier("row"),
-                                factory.createNumericLiteral(`${i}`)
-                              )
-                            )
+                                factory.createNumericLiteral(`${i}`),
+                              ),
+                            ),
                           ),
-                          true
-                        )
+                          true,
+                        ),
                       ),
                     ],
-                    true
-                  )
+                    true,
+                  ),
                 ),
-              ]
-            )
+              ],
+            ),
           ),
         ],
-        true
-      )
+        true,
+      ),
     );
   }
 
@@ -496,25 +439,19 @@ export class Driver {
     argIface: string | undefined,
     returnIface: string,
     params: Parameter[],
-    columns: Column[]
+    columns: Column[],
   ) {
     const funcParams = funcParamsDecl(argIface, params);
 
     return factory.createFunctionDeclaration(
-      [
-        factory.createToken(SyntaxKind.ExportKeyword),
-        factory.createToken(SyntaxKind.AsyncKeyword),
-      ],
+      [factory.createToken(SyntaxKind.ExportKeyword), factory.createToken(SyntaxKind.AsyncKeyword)],
       undefined,
       factory.createIdentifier(funcName),
       undefined,
       funcParams,
       factory.createTypeReferenceNode(factory.createIdentifier("Promise"), [
         factory.createUnionTypeNode([
-          factory.createTypeReferenceNode(
-            factory.createIdentifier(returnIface),
-            undefined
-          ),
+          factory.createTypeReferenceNode(factory.createIdentifier(returnIface), undefined),
           factory.createLiteralTypeNode(factory.createNull()),
         ]),
       ]),
@@ -530,7 +467,7 @@ export class Driver {
                       undefined,
                       undefined,
                       factory.createIdentifier("rows"),
-                      undefined
+                      undefined,
                     ),
                   ]),
                   undefined,
@@ -539,14 +476,14 @@ export class Driver {
                     factory.createCallExpression(
                       factory.createPropertyAccessExpression(
                         factory.createIdentifier("client"),
-                        factory.createIdentifier("query")
+                        factory.createIdentifier("query"),
                       ),
                       [
                         factory.createArrayTypeNode(
                           factory.createTypeReferenceNode(
                             factory.createIdentifier("RowDataPacket"),
-                            undefined
-                          )
+                            undefined,
+                          ),
                         ),
                       ],
                       [
@@ -554,7 +491,7 @@ export class Driver {
                           [
                             factory.createPropertyAssignment(
                               factory.createIdentifier("sql"),
-                              factory.createIdentifier(queryName)
+                              factory.createIdentifier(queryName),
                             ),
                             factory.createPropertyAssignment(
                               factory.createIdentifier("values"),
@@ -562,24 +499,22 @@ export class Driver {
                                 params.map((param, i) =>
                                   factory.createPropertyAccessExpression(
                                     factory.createIdentifier("args"),
-                                    factory.createIdentifier(
-                                      argName(i, param.column)
-                                    )
-                                  )
+                                    factory.createIdentifier(argName(i, param.column)),
+                                  ),
                                 ),
-                                false
-                              )
+                                false,
+                              ),
                             ),
                             factory.createPropertyAssignment(
                               factory.createIdentifier("rowsAsArray"),
-                              factory.createTrue()
+                              factory.createTrue(),
                             ),
                           ],
-                          true
+                          true,
                         ),
-                      ]
-                    )
-                  )
+                      ],
+                    ),
+                  ),
                 ),
               ],
               NodeFlags.Const |
@@ -587,23 +522,20 @@ export class Driver {
                 NodeFlags.AwaitContext |
                 // ts.NodeFlags.Constant |
                 NodeFlags.ContextFlags |
-                NodeFlags.TypeExcludesFlags
-            )
+                NodeFlags.TypeExcludesFlags,
+            ),
           ),
           factory.createIfStatement(
             factory.createBinaryExpression(
               factory.createPropertyAccessExpression(
                 factory.createIdentifier("rows"),
-                factory.createIdentifier("length")
+                factory.createIdentifier("length"),
               ),
               factory.createToken(SyntaxKind.ExclamationEqualsEqualsToken),
-              factory.createNumericLiteral("1")
+              factory.createNumericLiteral("1"),
             ),
-            factory.createBlock(
-              [factory.createReturnStatement(factory.createNull())],
-              true
-            ),
-            undefined
+            factory.createBlock([factory.createReturnStatement(factory.createNull())], true),
+            undefined,
           ),
           factory.createVariableStatement(
             undefined,
@@ -615,8 +547,8 @@ export class Driver {
                   undefined,
                   factory.createElementAccessExpression(
                     factory.createIdentifier("rows"),
-                    factory.createNumericLiteral("0")
-                  )
+                    factory.createNumericLiteral("0"),
+                  ),
                 ),
               ],
               NodeFlags.Const |
@@ -624,8 +556,8 @@ export class Driver {
                 NodeFlags.AwaitContext |
                 // NodeFlags.Constant |
                 NodeFlags.ContextFlags |
-                NodeFlags.TypeExcludesFlags
-            )
+                NodeFlags.TypeExcludesFlags,
+            ),
           ),
           factory.createReturnStatement(
             factory.createObjectLiteralExpression(
@@ -634,16 +566,16 @@ export class Driver {
                   factory.createIdentifier(colName(i, col)),
                   factory.createElementAccessExpression(
                     factory.createIdentifier("row"),
-                    factory.createNumericLiteral(`${i}`)
-                  )
-                )
+                    factory.createNumericLiteral(`${i}`),
+                  ),
+                ),
               ),
-              true
-            )
+              true,
+            ),
           ),
         ],
-        true
-      )
+        true,
+      ),
     );
   }
 
@@ -651,15 +583,12 @@ export class Driver {
     funcName: string,
     queryName: string,
     argIface: string | undefined,
-    params: Parameter[]
+    params: Parameter[],
   ) {
     const funcParams = funcParamsDecl(argIface, params);
 
     return factory.createFunctionDeclaration(
-      [
-        factory.createToken(SyntaxKind.ExportKeyword),
-        factory.createToken(SyntaxKind.AsyncKeyword),
-      ],
+      [factory.createToken(SyntaxKind.ExportKeyword), factory.createToken(SyntaxKind.AsyncKeyword)],
       undefined,
       factory.createIdentifier(funcName),
       undefined,
@@ -679,7 +608,7 @@ export class Driver {
                       undefined,
                       undefined,
                       factory.createIdentifier("result"),
-                      undefined
+                      undefined,
                     ),
                   ]),
                   undefined,
@@ -688,12 +617,12 @@ export class Driver {
                     factory.createCallExpression(
                       factory.createPropertyAccessExpression(
                         factory.createIdentifier("client"),
-                        factory.createIdentifier("query")
+                        factory.createIdentifier("query"),
                       ),
                       [
                         factory.createTypeReferenceNode(
                           factory.createIdentifier("ResultSetHeader"),
-                          undefined
+                          undefined,
                         ),
                       ],
                       [
@@ -701,7 +630,7 @@ export class Driver {
                           [
                             factory.createPropertyAssignment(
                               factory.createIdentifier("sql"),
-                              factory.createIdentifier(queryName)
+                              factory.createIdentifier(queryName),
                             ),
                             factory.createPropertyAssignment(
                               factory.createIdentifier("values"),
@@ -709,20 +638,18 @@ export class Driver {
                                 params.map((param, i) =>
                                   factory.createPropertyAccessExpression(
                                     factory.createIdentifier("args"),
-                                    factory.createIdentifier(
-                                      argName(i, param.column)
-                                    )
-                                  )
+                                    factory.createIdentifier(argName(i, param.column)),
+                                  ),
                                 ),
-                                false
-                              )
+                                false,
+                              ),
                             ),
                           ],
-                          true
+                          true,
                         ),
-                      ]
-                    )
-                  )
+                      ],
+                    ),
+                  ),
                 ),
               ],
               NodeFlags.Const |
@@ -730,23 +657,23 @@ export class Driver {
                 NodeFlags.AwaitContext |
                 // NodeFlags.Constant |
                 NodeFlags.ContextFlags |
-                NodeFlags.TypeExcludesFlags
-            )
+                NodeFlags.TypeExcludesFlags,
+            ),
           ),
           factory.createReturnStatement(
             factory.createBinaryExpression(
               factory.createPropertyAccessChain(
                 factory.createIdentifier("result"),
                 factory.createToken(SyntaxKind.QuestionDotToken),
-                factory.createIdentifier("insertId")
+                factory.createIdentifier("insertId"),
               ),
               factory.createToken(SyntaxKind.QuestionQuestionToken),
-              factory.createNumericLiteral(0)
-            )
+              factory.createNumericLiteral(0),
+            ),
           ),
         ],
-        true
-      )
+        true,
+      ),
     );
   }
 }

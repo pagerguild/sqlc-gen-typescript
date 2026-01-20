@@ -1,8 +1,8 @@
 {
-	"$schema": "./node_modules/oxfmt/configuration_schema.json",
-	"useTabs": false,
-	"singleQuote": false,
-	"trailingComma": "all",
-	"printWidth": 100,
-	"ignorePatterns": ["out.js", "src/gen/plugin/codegen_pb.ts", "examples/**", "node_modules/**"]
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "useTabs": false,
+  "singleQuote": false,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "ignorePatterns": ["out.js", "src/gen/plugin/codegen_pb.ts", "examples/**", "node_modules/**"]
 }
