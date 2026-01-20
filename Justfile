@@ -3,14 +3,20 @@ generate: plugin-wasm
     cd examples && sqlc-dev -f sqlc.dev.yaml generate
 
 # Compile JavaScript to WASM using javy
-
 # https://github.com/bytecodealliance/javy
+
+# Set JAVY_PATH to the directory containing javy if not in system PATH
 plugin-wasm: out-js
-    javy build out.js -o examples/plugin.wasm
+    #!/usr/bin/env bash
+    JAVY=javy
+    if [ -n "$JAVY_PATH" ]; then
+        JAVY="$JAVY_PATH/javy"
+    fi
+    $JAVY build out.js -o examples/plugin.wasm
 
 # Bundle TypeScript to JavaScript using rolldown
 out-js: codegen-proto
-    bun run rolldown -c rolldown.config.js
+    bun run rolldown -c rolldown.config.ts
 
 # Generate protobuf code using buf
 codegen-proto: lint

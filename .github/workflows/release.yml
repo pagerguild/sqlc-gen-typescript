@@ -35,7 +35,7 @@ jobs:
         run: bun install
 
       - name: Run unit tests
-        run: bun test
+        run: just test
 
       - name: Build WASM plugin
         run: just plugin-wasm && mv examples/plugin.wasm sqlc-gen-typescript.wasm

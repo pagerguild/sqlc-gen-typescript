@@ -29,17 +29,20 @@ jobs:
 
       - uses: sqlc-dev/setup-sqlc@v4
         with:
-          sqlc-version: "1.24.0"
+          sqlc-version: "1.30.0"
 
       - name: Install dependencies
         run: bun install
 
+      - name: Lint
+        run: just lint
+
       - name: Run unit tests
-        run: bun test
+        run: just test
 
       - name: Build WASM plugin
         run: just plugin-wasm
 
-      - name: Test with sqlc
+      - name: Verify generated examples match
         run: sqlc -f sqlc.dev.yaml diff
         working-directory: examples

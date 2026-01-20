@@ -9,6 +9,7 @@ import {
 } from "typescript";
 
 import { Driver as BunSqlDriver } from "./bun-sql";
+import { Driver as PostgresDriver } from "./postgres";
 import { rowValuesDecl } from "../decls";
 import type { Column, Parameter } from "../gen/plugin/codegen_pb";
 
@@ -173,5 +174,56 @@ describe("bun-sql driver codegen", () => {
     expect(output).toMatch(
       /\[\s*number,\s*number,\s*number,\s*number,\s*number,\s*number,\s*Date,\s*Date,\s*string\s*\]/,
     );
+  });
+
+  it("generates correct import statement", () => {
+    const driver = new BunSqlDriver();
+
+    const preamble = driver.preamble([]);
+    const output = print(preamble[0]);
+
+    expect(output).toContain('import type { SQL } from "bun"');
+  });
+});
+
+describe("postgres driver codegen", () => {
+  it("generates correct import statement with alias", () => {
+    const driver = new PostgresDriver();
+
+    const preamble = driver.preamble([]);
+    const output = print(preamble[0]);
+
+    expect(output).toContain('import type { Sql as SQL } from "postgres"');
+  });
+
+  it("produces same function signatures as bun-sql driver", () => {
+    const bunDriver = new BunSqlDriver();
+    const postgresDriver = new PostgresDriver();
+
+    const params: Parameter[] = [
+      { column: { name: "id", type: { name: "int8" } } } as unknown as Parameter,
+    ];
+
+    const columns: Column[] = [
+      { name: "id", type: { name: "int8" }, notNull: true } as unknown as Column,
+      { name: "name", type: { name: "text" }, notNull: true } as unknown as Column,
+    ];
+
+    const bunOutput = print(
+      bunDriver.oneDecl("getThing", "getThingQuery", "GetThingArgs", "GetThingRow", params, columns),
+    );
+    const postgresOutput = print(
+      postgresDriver.oneDecl(
+        "getThing",
+        "getThingQuery",
+        "GetThingArgs",
+        "GetThingRow",
+        params,
+        columns,
+      ),
+    );
+
+    // The function bodies should be identical (both use SQL as the type name)
+    expect(bunOutput).toBe(postgresOutput);
   });
 });
