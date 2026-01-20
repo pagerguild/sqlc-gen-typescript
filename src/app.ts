@@ -11,7 +11,7 @@ import {
   factory,
 } from "typescript";
 
-import { GenerateRequest, GenerateResponse, File } from "./gen/plugin/codegen_pb";
+import { GenerateRequest, GenerateResponse, File, Enum } from "./gen/plugin/codegen_pb";
 
 import { argName, colName } from "./drivers/utils";
 import { assertUniqueNames } from "./validate";
@@ -24,8 +24,64 @@ const result = codegen(input);
 // Write the result to stdout
 writeOutput(result);
 
+/**
+ * Build a map of enum names to their values from the catalog.
+ * This allows us to recognize enum types and generate appropriate TypeScript types.
+ */
+function buildEnumMap(input: GenerateRequest): Map<string, Enum> {
+  const enumMap = new Map<string, Enum>();
+  const defaultSchema = input.catalog?.defaultSchema ?? "public";
+
+  for (const schema of input.catalog?.schemas ?? []) {
+    if (schema.name === "pg_catalog" || schema.name === "information_schema") {
+      continue;
+    }
+
+    for (const enumDef of schema.enums) {
+      // Store with both qualified and unqualified names
+      enumMap.set(enumDef.name, enumDef);
+      if (schema.name !== defaultSchema) {
+        enumMap.set(`${schema.name}.${enumDef.name}`, enumDef);
+      }
+    }
+  }
+
+  return enumMap;
+}
+
+/**
+ * Generate TypeScript union type for an enum.
+ * e.g., type EventSource = 'user' | 'runner' | 'system';
+ */
+function enumTypeDecl(name: string, enumDef: Enum): Node {
+  const unionType = factory.createUnionTypeNode(
+    enumDef.vals.map((val) => factory.createLiteralTypeNode(factory.createStringLiteral(val))),
+  );
+
+  return factory.createTypeAliasDeclaration(
+    [factory.createToken(SyntaxKind.ExportKeyword)],
+    factory.createIdentifier(pascalCase(name)),
+    undefined,
+    unionType,
+  );
+}
+
+/**
+ * Convert snake_case to PascalCase
+ */
+function pascalCase(str: string): string {
+  return str
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join("");
+}
+
 function codegen(input: GenerateRequest): GenerateResponse {
-  let files = [];
+  const files = [];
+  const enumMap = buildEnumMap(input);
+
+  // Set the enum map in the postgres driver so columnType can use it
+  postgres.setEnumMap(enumMap);
 
   const querymap = new Map<string, typeof input.queries>();
 
@@ -37,8 +93,14 @@ function codegen(input: GenerateRequest): GenerateResponse {
     qs?.push(query);
   }
 
+  // Track which enums are used across all files
+  const usedEnums = new Set<string>();
+
   for (const [filename, queries] of querymap.entries()) {
     const nodes: Node[] = [...postgres.preamble()];
+
+    // Track enums used in this file
+    const fileEnums = new Set<string>();
 
     for (const query of queries) {
       const lowerName = query.name[0].toLowerCase() + query.name.slice(1);
@@ -56,22 +118,37 @@ function codegen(input: GenerateRequest): GenerateResponse {
           names,
         });
 
-        nodes.push(
-          factory.createInterfaceDeclaration(
-            [factory.createToken(SyntaxKind.ExportKeyword)],
-            factory.createIdentifier(argIface),
-            undefined,
-            undefined,
-            query.params.map((param, i) =>
-              factory.createPropertySignature(
-                undefined,
-                factory.createIdentifier(argName(i, param.column)),
-                undefined,
-                postgres.columnType(param.column),
+        // Check for enum usage in params
+        for (const param of query.params) {
+          const enumName = postgres.getEnumName(param.column);
+          if (enumName) {
+            fileEnums.add(enumName);
+            usedEnums.add(enumName);
+          }
+        }
+
+        try {
+          nodes.push(
+            factory.createInterfaceDeclaration(
+              [factory.createToken(SyntaxKind.ExportKeyword)],
+              factory.createIdentifier(argIface),
+              undefined,
+              undefined,
+              query.params.map((param, i) =>
+                factory.createPropertySignature(
+                  undefined,
+                  factory.createIdentifier(argName(i, param.column)),
+                  undefined,
+                  postgres.columnType(param.column),
+                ),
               ),
             ),
-          ),
-        );
+          );
+        } catch (err) {
+          throw new Error(
+            `Error in query "${query.name}" (${filename}): ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
       }
 
       if (query.columns.length > 0) {
@@ -84,22 +161,37 @@ function codegen(input: GenerateRequest): GenerateResponse {
           names,
         });
 
-        nodes.push(
-          factory.createInterfaceDeclaration(
-            [factory.createToken(SyntaxKind.ExportKeyword)],
-            factory.createIdentifier(returnIface),
-            undefined,
-            undefined,
-            query.columns.map((column, i) =>
-              factory.createPropertySignature(
-                undefined,
-                factory.createIdentifier(colName(i, column)),
-                undefined,
-                postgres.columnType(column),
+        // Check for enum usage in columns
+        for (const col of query.columns) {
+          const enumName = postgres.getEnumName(col);
+          if (enumName) {
+            fileEnums.add(enumName);
+            usedEnums.add(enumName);
+          }
+        }
+
+        try {
+          nodes.push(
+            factory.createInterfaceDeclaration(
+              [factory.createToken(SyntaxKind.ExportKeyword)],
+              factory.createIdentifier(returnIface),
+              undefined,
+              undefined,
+              query.columns.map((column, i) =>
+                factory.createPropertySignature(
+                  undefined,
+                  factory.createIdentifier(colName(i, column)),
+                  undefined,
+                  postgres.columnType(column),
+                ),
               ),
             ),
-          ),
-        );
+          );
+        } catch (err) {
+          throw new Error(
+            `Error in query "${query.name}" (${filename}): ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
       }
 
       switch (query.cmd) {
@@ -140,6 +232,19 @@ function codegen(input: GenerateRequest): GenerateResponse {
       }
     }
 
+    // Add enum type declarations at the beginning of the file (after imports)
+    const enumNodes: Node[] = [];
+    for (const enumName of fileEnums) {
+      const enumDef = enumMap.get(enumName);
+      if (enumDef) {
+        enumNodes.push(enumTypeDecl(enumName, enumDef));
+      }
+    }
+
+    // Insert enum declarations after the preamble (imports)
+    const preambleLength = postgres.preamble().length;
+    nodes.splice(preambleLength, 0, ...enumNodes);
+
     files.push(
       new File({
         name: `${filename.replace(".", "_")}.ts`,
@@ -169,7 +274,7 @@ function printNode(nodes: Node[]): string {
   );
   const printer = createPrinter({ newLine: NewLineKind.LineFeed });
   let output = "// Code generated by sqlc. DO NOT EDIT.\n\n";
-  for (let node of nodes) {
+  for (const node of nodes) {
     output += printer.printNode(EmitHint.Unspecified, node, resultFile);
     output += "\n\n";
   }

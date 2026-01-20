@@ -9,30 +9,94 @@
 
 import { SyntaxKind, NodeFlags, TypeNode, factory, FunctionDeclaration } from "typescript";
 
-import { Parameter, Column } from "../gen/plugin/codegen_pb";
+import { Parameter, Column, Enum } from "../gen/plugin/codegen_pb";
 import { argName } from "./utils";
+
+// Map of enum names to their definitions, set by app.ts
+let enumMap: Map<string, Enum> = new Map();
+
+/**
+ * Set the enum map from the catalog. Called by app.ts before generating code.
+ */
+export function setEnumMap(map: Map<string, Enum>): void {
+  enumMap = map;
+}
+
+/**
+ * Check if a column type is an enum and return the enum name if so.
+ */
+export function getEnumName(column?: Column): string | null {
+  if (column === undefined || column.type === undefined) {
+    return null;
+  }
+  const typeName = column.type.name.toLowerCase();
+  if (enumMap.has(typeName)) {
+    return typeName;
+  }
+  return null;
+}
+
+/**
+ * Convert snake_case to PascalCase for enum type names
+ */
+function pascalCase(str: string): string {
+  return str
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join("");
+}
 
 export function columnType(column?: Column): TypeNode {
   if (column === undefined || column.type === undefined) {
     return factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
   }
-  let typeName = column.type.name;
+  const originalTypeName = column.type.name;
+  let typeName = originalTypeName;
   const pgCatalog = "pg_catalog.";
   if (typeName.startsWith(pgCatalog)) {
     typeName = typeName.slice(pgCatalog.length);
   }
 
-  typeName = typeName.toLowerCase();
+  const lowerTypeName = typeName.toLowerCase();
 
-  let typ: TypeNode = factory.createKeywordTypeNode(SyntaxKind.StringKeyword);
-  switch (typeName) {
+  // Check if it's an enum type
+  if (enumMap.has(lowerTypeName)) {
+    const typ = factory.createTypeReferenceNode(
+      factory.createIdentifier(pascalCase(lowerTypeName)),
+      undefined,
+    );
+    if (column.isArray || column.arrayDims > 0) {
+      let arrayType: TypeNode = typ;
+      const dims = Math.max(column.arrayDims || 1);
+      for (let i = 0; i < dims; i++) {
+        arrayType = factory.createArrayTypeNode(arrayType);
+      }
+      if (column.notNull) {
+        return arrayType;
+      }
+      return factory.createUnionTypeNode([
+        arrayType,
+        factory.createLiteralTypeNode(factory.createNull()),
+      ]);
+    }
+    if (column.notNull) {
+      return typ;
+    }
+    return factory.createUnionTypeNode([typ, factory.createLiteralTypeNode(factory.createNull())]);
+  }
+
+  let typ: TypeNode;
+  switch (lowerTypeName) {
+    // Boolean types
     case "bool":
     case "boolean":
       typ = factory.createKeywordTypeNode(SyntaxKind.BooleanKeyword);
       break;
+    // Binary types
     case "bytea":
       typ = factory.createTypeReferenceNode(factory.createIdentifier("Buffer"), undefined);
       break;
+    // Date/time types
     case "date":
     case "timestamp":
     case "timestamp without time zone":
@@ -40,6 +104,7 @@ export function columnType(column?: Column): TypeNode {
     case "timestamp with time zone":
       typ = factory.createTypeReferenceNode(factory.createIdentifier("Date"), undefined);
       break;
+    // Numeric types
     case "float4":
     case "real":
     case "float8":
@@ -61,11 +126,64 @@ export function columnType(column?: Column): TypeNode {
     case "oid":
       typ = factory.createKeywordTypeNode(SyntaxKind.NumberKeyword);
       break;
+    // JSON types - any to allow flexible object access
     case "json":
     case "jsonb":
       typ = factory.createKeywordTypeNode(SyntaxKind.AnyKeyword);
       break;
-    // All other types default to string (uuid, text, varchar, etc.)
+    // Void type (from functions like pg_advisory_xact_lock)
+    case "void":
+      typ = factory.createKeywordTypeNode(SyntaxKind.VoidKeyword);
+      break;
+    // String types - explicitly listed (unambiguously representable as string)
+    case "text":
+    case "varchar":
+    case "character varying":
+    case "char":
+    case "character":
+    case "bpchar":
+    case "name":
+    case "uuid":
+    case "citext":
+    case "inet":
+    case "cidr":
+    case "macaddr":
+    case "macaddr8":
+    case "money":
+    case "numeric":
+    case "decimal":
+    case "xml":
+    case "bit":
+    case "varbit":
+    case "bit varying":
+    case "interval":
+    case "time":
+    case "time without time zone":
+    case "timetz":
+    case "time with time zone":
+    case "tsvector":
+    case "tsquery":
+      typ = factory.createKeywordTypeNode(SyntaxKind.StringKeyword);
+      break;
+    // Geometric types - postgres.js returns these as objects, not strings
+    case "point":
+    case "line":
+    case "lseg":
+    case "box":
+    case "path":
+    case "polygon":
+    case "circle":
+      throw new Error(
+        `Unrecognized PostgreSQL type: "${originalTypeName}". ` +
+          `Please add support for this type in sqlc-gen-typescript/src/drivers/postgres.ts`,
+      );
+    default:
+      throw new Error(
+        `Unrecognized PostgreSQL type: "${originalTypeName}" for column "${column.name || "unknown"}". ` +
+          `This usually means sqlc couldn't infer the type. ` +
+          `Try adding an explicit cast like "sqlc.arg(${column.name})::text" or "sqlc.narg('${column.name}')" in your query. ` +
+          `If this is a valid PostgreSQL type that needs support, please add it to sqlc-gen-typescript/src/drivers/postgres.ts`,
+      );
   }
 
   if (column.isArray || column.arrayDims > 0) {
