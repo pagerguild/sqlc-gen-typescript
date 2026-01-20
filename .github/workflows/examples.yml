@@ -7,12 +7,6 @@ on:
 jobs:
   bun-postgresql:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - dir: "examples/bun-postgres"
-          - dir: "examples/bun-pg"
-          - dir: "examples/bun-sql"
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -23,23 +17,18 @@ jobs:
           postgres-version: "16"
         id: postgres
       - run: bun install
-        working-directory: ${{ matrix.dir }}
+        working-directory: examples/bun-postgres
       - run: psql -f schema.sql "$DATABASE_URL"
         working-directory: examples/authors/postgresql
         env:
           DATABASE_URL: ${{ steps.postgres.outputs.connection-uri }}?sslmode=disable
       - run: bun run src/main.ts
-        working-directory: ${{ matrix.dir }}
+        working-directory: examples/bun-postgres
         env:
           DATABASE_URL: ${{ steps.postgres.outputs.connection-uri }}?sslmode=disable
 
   node-postgresql:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - dir: "examples/node-postgres"
-          - dir: "examples/node-pg"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -48,14 +37,14 @@ jobs:
           postgres-version: "16"
         id: postgres
       - run: npm install
-        working-directory: ${{ matrix.dir }}
+        working-directory: examples/node-postgres
       - run: npx tsc
-        working-directory: ${{ matrix.dir }}
+        working-directory: examples/node-postgres
       - run: psql -f schema.sql "$DATABASE_URL"
         working-directory: examples/authors/postgresql
         env:
           DATABASE_URL: ${{ steps.postgres.outputs.connection-uri }}?sslmode=disable
       - run: node ./src/main.js
-        working-directory: ${{ matrix.dir }}
+        working-directory: examples/node-postgres
         env:
           DATABASE_URL: ${{ steps.postgres.outputs.connection-uri }}?sslmode=disable
