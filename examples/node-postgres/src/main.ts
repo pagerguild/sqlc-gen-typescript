@@ -14,6 +14,7 @@ async function main() {
   const author = await createAuthor(sql, {
     name: "Seal",
     bio: "Kissed from a rose",
+    status: "active",
   });
   if (author === null) {
     throw new Error("author not created");

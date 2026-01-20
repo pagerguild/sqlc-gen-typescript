@@ -2,6 +2,8 @@
 
 import type { Sql } from "postgres";
 
+export type AuthorStatus = "active" | "inactive" | "pending";
+
 export interface GetAuthorArgs {
     id: number;
 }
@@ -10,10 +12,11 @@ export interface GetAuthorRow {
     id: number;
     name: string;
     bio: string | null;
+    status: AuthorStatus;
 }
 
 export async function getAuthor(sql: Sql, args: GetAuthorArgs): Promise<GetAuthorRow | null> {
-    const rows = await sql<GetAuthorRow[]> `SELECT id, name, bio FROM authors
+    const rows = await sql<GetAuthorRow[]> `SELECT id, name, bio, status FROM authors
 WHERE id = ${args.id} LIMIT 1`;
     return rows[0] ?? null;
 }
@@ -22,32 +25,52 @@ export interface ListAuthorsRow {
     id: number;
     name: string;
     bio: string | null;
+    status: AuthorStatus;
 }
 
 export async function listAuthors(sql: Sql): Promise<ListAuthorsRow[]> {
-    return await sql<ListAuthorsRow[]> `SELECT id, name, bio FROM authors
+    return await sql<ListAuthorsRow[]> `SELECT id, name, bio, status FROM authors
 ORDER BY name`;
 }
 
 export interface CreateAuthorArgs {
     name: string;
     bio: string | null;
+    status: AuthorStatus;
 }
 
 export interface CreateAuthorRow {
     id: number;
     name: string;
     bio: string | null;
+    status: AuthorStatus;
 }
 
 export async function createAuthor(sql: Sql, args: CreateAuthorArgs): Promise<CreateAuthorRow | null> {
     const rows = await sql<CreateAuthorRow[]> `INSERT INTO authors (
-  name, bio
+  name, bio, status
 ) VALUES (
-  ${args.name}, ${args.bio}
+  ${args.name}, ${args.bio}, ${args.status}
 )
-RETURNING id, name, bio`;
+RETURNING id, name, bio, status`;
     return rows[0] ?? null;
+}
+
+export interface ListAuthorsByStatusArgs {
+    status: AuthorStatus;
+}
+
+export interface ListAuthorsByStatusRow {
+    id: number;
+    name: string;
+    bio: string | null;
+    status: AuthorStatus;
+}
+
+export async function listAuthorsByStatus(sql: Sql, args: ListAuthorsByStatusArgs): Promise<ListAuthorsByStatusRow[]> {
+    return await sql<ListAuthorsByStatusRow[]> `SELECT id, name, bio, status FROM authors
+WHERE status = ${args.status}
+ORDER BY name`;
 }
 
 export interface DeleteAuthorArgs {

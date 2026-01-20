@@ -8,11 +8,16 @@ ORDER BY name;
 
 -- name: CreateAuthor :one
 INSERT INTO authors (
-  name, bio
+  name, bio, status
 ) VALUES (
-  $1, $2
+  $1, $2, $3
 )
 RETURNING *;
+
+-- name: ListAuthorsByStatus :many
+SELECT * FROM authors
+WHERE status = $1
+ORDER BY name;
 
 -- name: DeleteAuthor :exec
 DELETE FROM authors
