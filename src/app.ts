@@ -23,7 +23,7 @@ import {
 } from "./gen/plugin/codegen_pb";
 
 import { argName, colName } from "./drivers/utlis";
-import { rowValuesDecl } from "./decls";
+
 import { assertUniqueNames } from "./validate";
 import { Driver as PgDriver } from "./drivers/pg";
 import { Driver as PostgresDriver } from "./drivers/postgres";
@@ -147,7 +147,6 @@ ${query.text}`,
             fileName: filename,
           }),
         );
-        nodes.push(rowValuesDecl(`${returnIface}Values`, driver, query.columns));
       }
 
       switch (query.cmd) {

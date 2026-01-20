@@ -16,14 +16,8 @@ export interface GetAuthorRow {
     bio: string | null;
 }
 
-export type GetAuthorRowValues = [
-    number,
-    string,
-    string | null
-];
-
 export async function getAuthor(sql: SQL, args: GetAuthorArgs): Promise<GetAuthorRow | null> {
-    const rows = await sql.unsafe(getAuthorQuery, [args.id]).values() as GetAuthorRowValues[];
+    const rows = await sql.unsafe(getAuthorQuery, [args.id]).values() as any[];
     if (rows.length !== 1) {
         return null;
     }
@@ -48,14 +42,8 @@ export interface ListAuthorsRow {
     bio: string | null;
 }
 
-export type ListAuthorsRowValues = [
-    number,
-    string,
-    string | null
-];
-
 export async function listAuthors(sql: SQL): Promise<ListAuthorsRow[]> {
-    return (await sql.unsafe(listAuthorsQuery, []).values() as ListAuthorsRowValues[]).map(row => ({
+    return (await sql.unsafe(listAuthorsQuery, []).values() as any[]).map((row: any[]) => ({
         id: Number(row[0]),
         name: row[1],
         bio: row[2]
@@ -81,14 +69,8 @@ export interface CreateAuthorRow {
     bio: string | null;
 }
 
-export type CreateAuthorRowValues = [
-    number,
-    string,
-    string | null
-];
-
 export async function createAuthor(sql: SQL, args: CreateAuthorArgs): Promise<CreateAuthorRow | null> {
-    const rows = await sql.unsafe(createAuthorQuery, [args.name, args.bio]).values() as CreateAuthorRowValues[];
+    const rows = await sql.unsafe(createAuthorQuery, [args.name, args.bio]).values() as any[];
     if (rows.length !== 1) {
         return null;
     }

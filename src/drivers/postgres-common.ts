@@ -535,10 +535,7 @@ export class PostgresCommonDriver {
                       ),
                     ),
                     factory.createArrayTypeNode(
-                      factory.createTypeReferenceNode(
-                        factory.createIdentifier(`${returnIface}Values`),
-                        undefined,
-                      ),
+                      factory.createKeywordTypeNode(SyntaxKind.AnyKeyword),
                     ),
                   ),
                 ),
@@ -549,7 +546,18 @@ export class PostgresCommonDriver {
                 factory.createArrowFunction(
                   undefined,
                   undefined,
-                  [factory.createParameterDeclaration(undefined, undefined, "row")],
+                  [
+                    factory.createParameterDeclaration(
+                      undefined,
+                      undefined,
+                      "row",
+                      undefined,
+                      factory.createArrayTypeNode(
+                        factory.createKeywordTypeNode(SyntaxKind.AnyKeyword),
+                      ),
+                      undefined,
+                    ),
+                  ],
                   undefined,
                   factory.createToken(SyntaxKind.EqualsGreaterThanToken),
                   factory.createObjectLiteralExpression(
@@ -633,10 +641,7 @@ export class PostgresCommonDriver {
                       ),
                     ),
                     factory.createArrayTypeNode(
-                      factory.createTypeReferenceNode(
-                        factory.createIdentifier(`${returnIface}Values`),
-                        undefined,
-                      ),
+                      factory.createKeywordTypeNode(SyntaxKind.AnyKeyword),
                     ),
                   ),
                 ),

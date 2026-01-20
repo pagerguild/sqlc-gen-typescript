@@ -47,8 +47,8 @@ describe("bun-sql driver codegen", () => {
 
     const output = print(node);
 
-    expect(output).toContain("as ListThingsRowValues[]");
-    expect(output).toContain(".map(row =>");
+    expect(output).toContain("values() as any[]");
+    expect(output).toContain(".map((row: any[]) =>");
   });
 
   it("casts values() result to RowValues tuple array for :one", () => {
@@ -74,7 +74,7 @@ describe("bun-sql driver codegen", () => {
     );
 
     const output = print(node);
-    expect(output).toContain("as GetThingRowValues[]");
+    expect(output).toContain("values() as any[]");
   });
 
   it("wraps bigint columns with Number() in :many", () => {
@@ -187,13 +187,13 @@ describe("bun-sql driver codegen", () => {
 });
 
 describe("postgres driver codegen", () => {
-  it("generates correct import statement with alias", () => {
+  it("generates correct import statement", () => {
     const driver = new PostgresDriver();
 
     const preamble = driver.preamble([]);
     const output = print(preamble[0]);
 
-    expect(output).toContain('import type { Sql as SQL } from "postgres"');
+    expect(output).toContain('import type { Sql } from "postgres"');
   });
 
   it("generates simpler code that casts directly to Row type", () => {

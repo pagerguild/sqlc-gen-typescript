@@ -20,12 +20,6 @@ export interface GetAuthorRow {
     bio: string | null;
 }
 
-export type GetAuthorRowValues = [
-    string,
-    string,
-    string | null
-];
-
 export async function getAuthor(client: Client, args: GetAuthorArgs): Promise<GetAuthorRow | null> {
     const result = await client.query({
         text: getAuthorQuery,
@@ -52,12 +46,6 @@ export interface ListAuthorsRow {
     name: string;
     bio: string | null;
 }
-
-export type ListAuthorsRowValues = [
-    string,
-    string,
-    string | null
-];
 
 export async function listAuthors(client: Client): Promise<ListAuthorsRow[]> {
     const result = await client.query({
@@ -92,12 +80,6 @@ export interface CreateAuthorRow {
     name: string;
     bio: string | null;
 }
-
-export type CreateAuthorRowValues = [
-    string,
-    string,
-    string | null
-];
 
 export async function createAuthor(client: Client, args: CreateAuthorArgs): Promise<CreateAuthorRow | null> {
     const result = await client.query({

@@ -18,7 +18,7 @@ function funcParamsDecl(iface: string | undefined, params: Parameter[]) {
       undefined,
       factory.createIdentifier("sql"),
       undefined,
-      factory.createTypeReferenceNode(factory.createIdentifier("SQL"), undefined),
+      factory.createTypeReferenceNode(factory.createIdentifier("Sql"), undefined),
       undefined,
     ),
   ];
@@ -167,7 +167,6 @@ export class Driver {
   }
 
   preamble(_queries: unknown) {
-    // Import Sql and alias to SQL for consistency with bun-sql generated code
     return [
       factory.createImportDeclaration(
         undefined,
@@ -175,11 +174,7 @@ export class Driver {
           true, // type-only import
           undefined,
           factory.createNamedImports([
-            factory.createImportSpecifier(
-              false,
-              factory.createIdentifier("Sql"),
-              factory.createIdentifier("SQL"),
-            ),
+            factory.createImportSpecifier(false, undefined, factory.createIdentifier("Sql")),
           ]),
         ),
         factory.createStringLiteral("postgres"),
